@@ -134,14 +134,30 @@ function authenticateStudent(identifier, password) {
   const cleanPass = String(password).trim();
 
   // Check Tutor Credentials
-  if (
-    (cleanId === 'bagus.panca@ecampus.ut.ac.id' || cleanId === 'tutor' || cleanId === 'admin' || cleanId === 'bagus' || cleanId === '198710262024011001') &&
-    (cleanPass === 'tutor123' || cleanPass === '123456' || cleanPass === 'admin' || cleanPass === 'tutor' || cleanPass === 'bagus' || cleanPass === '198710262024011001')
-  ) {
+  const isTutorUser = (
+    cleanId === 'bagoespancawiratama@gmail.com' ||
+    cleanId === 'bagoespancawiratama' ||
+    cleanId === 'bagus.panca@ecampus.ut.ac.id' ||
+    cleanId === 'tutor' ||
+    cleanId === 'admin' ||
+    cleanId === 'bagus' ||
+    cleanId === '198805122019031008' ||
+    cleanId === '198710262024011001'
+  );
+  const isTutorPass = (
+    cleanPass === '18004313*' ||
+    cleanPass === 'tutor123' ||
+    cleanPass === '123456' ||
+    cleanPass === 'admin' ||
+    cleanPass === 'tutor' ||
+    cleanPass === '198805122019031008'
+  );
+
+  if (isTutorUser && isTutorPass) {
     return {
       role: 'tutor',
       nama: TUTOR_DATA.nama,
-      email: TUTOR_DATA.email,
+      email: 'bagoespancawiratama@gmail.com',
       nip: TUTOR_DATA.nip,
       foto: TUTOR_DATA.foto,
       gelar: TUTOR_DATA.gelar
@@ -194,15 +210,15 @@ window.switchLoginRole = function(role) {
     if (tabMhs) tabMhs.className = 'flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition text-slate-600 hover:text-slate-900';
     if (title) title.innerText = 'Login Tutor Pengampu';
     if (desc) desc.innerHTML = 'Portal khusus Tutor (<strong class="text-[#003367]">' + TUTOR_DATA.nama + '</strong>) untuk memantau aktivitas dan memberikan penilaian mahasiswa.';
-    if (userLabel) userLabel.innerText = 'Email Tutor atau NIP / Username';
+    if (userLabel) userLabel.innerText = 'Username / Email Tutor';
     if (userField) {
-      userField.placeholder = 'bagus.panca@ecampus.ut.ac.id';
-      userField.value = 'bagus.panca@ecampus.ut.ac.id';
+      userField.placeholder = 'bagoespancawiratama@gmail.com';
+      userField.value = 'bagoespancawiratama@gmail.com';
     }
     if (pwLabel) pwLabel.innerText = 'Password Tutor';
     if (pwField) {
-      pwField.placeholder = 'Masukkan Password Tutor (default: tutor123)';
-      pwField.value = 'tutor123';
+      pwField.placeholder = 'Masukkan Password Tutor (18004313*)';
+      pwField.value = '18004313*';
     }
     if (btnText) btnText.innerText = 'Masuk ke Dasbor Penilaian Tutor';
   } else {
@@ -250,7 +266,7 @@ function handleLogin(e) {
     if (errorBox) {
       errorBox.classList.remove('hidden');
       if (state.loginRole === 'tutor') {
-        errorBox.innerText = 'Username atau Password Tutor salah. Gunakan Email Tutor: bagus.panca@ecampus.ut.ac.id dan Password: tutor123';
+        errorBox.innerText = 'Username atau Password Tutor salah. Gunakan Username: bagoespancawiratama@gmail.com dan Password: 18004313*';
       } else {
         errorBox.innerText = 'Username (Email Kampus) atau Password (NIM) tidak cocok. Pastikan data NIM dan Email sudah benar.';
       }
@@ -420,7 +436,7 @@ window.handleModalLogin = function(e) {
   } else {
     if (errorBox) {
       errorBox.classList.remove('hidden');
-      errorBox.innerText = 'Username (Email) atau Password (NIM) tidak cocok. Silakan coba lagi atau gunakan menu pilih cepat di bawah.';
+      errorBox.innerText = 'Username atau Password tidak cocok. Mahasiswa: gunakan Email Kampus & NIM. Tutor: gunakan bagoespancawiratama@gmail.com.';
     }
   }
 };
@@ -965,15 +981,15 @@ function renderHomeView() {
           <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
               <label id="login-user-label" class="block text-xs font-bold text-slate-700 mb-1.5">
-                ${state.loginRole === 'tutor' ? 'Email Tutor atau NIP / Username' : 'Username (Email Kampus atau NIM)'}
+                ${state.loginRole === 'tutor' ? 'Username / Email Tutor' : 'Username (Email Kampus atau NIM)'}
               </label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                   <span class="material-symbols-outlined text-[20px]">mail</span>
                 </span>
                 <input id="login-username" type="text" required
-                       placeholder="${state.loginRole === 'tutor' ? 'bagus.panca@ecampus.ut.ac.id' : 'Contoh: 860080512@ecampus.ut.ac.id atau 860080512'}" 
-                       value="${state.loginRole === 'tutor' ? 'bagus.panca@ecampus.ut.ac.id' : ''}"
+                       placeholder="${state.loginRole === 'tutor' ? 'bagoespancawiratama@gmail.com' : 'Contoh: 860080512@ecampus.ut.ac.id atau 860080512'}" 
+                       value="${state.loginRole === 'tutor' ? 'bagoespancawiratama@gmail.com' : ''}"
                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
               </div>
             </div>
@@ -987,8 +1003,8 @@ function renderHomeView() {
                   <span class="material-symbols-outlined text-[20px]">key</span>
                 </span>
                 <input id="login-password" type="password" required
-                       placeholder="${state.loginRole === 'tutor' ? 'Masukkan Password Tutor (default: tutor123)' : 'Masukkan NIM Anda'}" 
-                       value="${state.loginRole === 'tutor' ? 'tutor123' : ''}"
+                       placeholder="${state.loginRole === 'tutor' ? 'Masukkan Password Tutor (18004313*)' : 'Masukkan NIM Anda'}" 
+                       value="${state.loginRole === 'tutor' ? '18004313*' : ''}"
                        class="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
                 <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
                   <span id="pw-icon" class="material-symbols-outlined text-[20px]">visibility</span>
