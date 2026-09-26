@@ -422,12 +422,139 @@ window.exportGradebookCSV = function(classId) {
 
 window.switchTutorTab = function(tab) {
   state.tutorTab = tab;
+  state.currentTab = tab;
+  saveLocalState();
   renderApp();
 };
 
-window.switchTutorSesiFilter = function(sesi) {
+window.switchTutorSesi = function(sesi) {
   state.tutorSesiFilter = parseInt(sesi);
+  state.currentSesi = parseInt(sesi);
+  saveLocalState();
   renderApp();
+};
+window.switchTutorSesiFilter = window.switchTutorSesi;
+
+window.switchTutorClass = function(classId) {
+  state.currentClassId = classId;
+  saveLocalState();
+  renderApp();
+};
+
+window.quickLoginTutor = function() {
+  if (state.currentUser && state.currentUser.role === 'tutor') {
+    navigateTo('tutor-view');
+  } else {
+    openLoginModal();
+    switchLoginRole('tutor');
+  }
+};
+
+window.saveInlineGrade = function(nim, type, sesi) {
+  const student = STUDENTS_DATA.find(s => s.nim === String(nim));
+  if (!student) return;
+  if (!state.grades) state.grades = {};
+  if (!state.grades[nim]) {
+    state.grades[nim] = { tugas1: '', tugas2: '', tugas3: '', partisipasi: '', catatan: '' };
+  }
+
+  if (type === 'tugas') {
+    const valEl = document.getElementById(`input-grade-tugas-${nim}`);
+    const noteEl = document.getElementById(`input-note-tugas-${nim}`);
+    const val = valEl ? valEl.value.trim() : '';
+    const note = noteEl ? noteEl.value.trim() : '';
+
+    if (sesi === 3) state.grades[nim].tugas1 = val !== '' ? parseFloat(val) : '';
+    else if (sesi === 5) state.grades[nim].tugas2 = val !== '' ? parseFloat(val) : '';
+    else if (sesi === 7) state.grades[nim].tugas3 = val !== '' ? parseFloat(val) : '';
+    else {
+      if (!state.grades[nim].kuis) state.grades[nim].kuis = {};
+      state.grades[nim].kuis[sesi] = val !== '' ? parseFloat(val) : '';
+    }
+    if (note) state.grades[nim].catatan = note;
+  } else if (type === 'lkpd') {
+    const valEl = document.getElementById(`input-grade-lkpd-${nim}`);
+    const noteEl = document.getElementById(`input-note-lkpd-${nim}`);
+    const val = valEl ? valEl.value.trim() : '';
+    const note = noteEl ? noteEl.value.trim() : '';
+
+    if (!state.grades[nim].lkpd) state.grades[nim].lkpd = {};
+    state.grades[nim].lkpd[sesi] = val !== '' ? parseFloat(val) : '';
+    if (val !== '' && (state.grades[nim].partisipasi === '' || state.grades[nim].partisipasi === undefined)) {
+      state.grades[nim].partisipasi = parseFloat(val);
+    }
+    if (note) state.grades[nim].catatan = note;
+  } else if (type === 'partisipasi') {
+    const valEl = document.getElementById(`input-grade-part-${nim}`);
+    const noteEl = document.getElementById(`input-note-part-${nim}`);
+    const val = valEl ? valEl.value.trim() : '';
+    const note = noteEl ? noteEl.value.trim() : '';
+
+    state.grades[nim].partisipasi = val !== '' ? parseFloat(val) : '';
+    if (note) state.grades[nim].catatan = note;
+  }
+
+  localStorage.setItem('ut_grades', JSON.stringify(state.grades));
+  renderApp();
+  showToast(`Nilai mahasiswa ${student.nama} (${student.nim}) berhasil disimpan!`, 'success');
+};
+
+window.saveAllInlineGrades = function(classId, type, sesi) {
+  const students = STUDENTS_DATA.filter(s => s.kelas === classId);
+  if (!state.grades) state.grades = {};
+  let count = 0;
+
+  students.forEach(s => {
+    if (!state.grades[s.nim]) {
+      state.grades[s.nim] = { tugas1: '', tugas2: '', tugas3: '', partisipasi: '', catatan: '' };
+    }
+
+    if (type === 'tugas') {
+      const valEl = document.getElementById(`input-grade-tugas-${s.nim}`);
+      const noteEl = document.getElementById(`input-note-tugas-${s.nim}`);
+      const val = valEl ? valEl.value.trim() : '';
+      const note = noteEl ? noteEl.value.trim() : '';
+      if (val !== '') {
+        if (sesi === 3) state.grades[s.nim].tugas1 = parseFloat(val);
+        else if (sesi === 5) state.grades[s.nim].tugas2 = parseFloat(val);
+        else if (sesi === 7) state.grades[s.nim].tugas3 = parseFloat(val);
+        else {
+          if (!state.grades[s.nim].kuis) state.grades[s.nim].kuis = {};
+          state.grades[s.nim].kuis[sesi] = parseFloat(val);
+        }
+        count++;
+      }
+      if (note) state.grades[s.nim].catatan = note;
+    } else if (type === 'lkpd') {
+      const valEl = document.getElementById(`input-grade-lkpd-${s.nim}`);
+      const noteEl = document.getElementById(`input-note-lkpd-${s.nim}`);
+      const val = valEl ? valEl.value.trim() : '';
+      const note = noteEl ? noteEl.value.trim() : '';
+      if (val !== '') {
+        if (!state.grades[s.nim].lkpd) state.grades[s.nim].lkpd = {};
+        state.grades[s.nim].lkpd[sesi] = parseFloat(val);
+        if (state.grades[s.nim].partisipasi === '' || state.grades[s.nim].partisipasi === undefined) {
+          state.grades[s.nim].partisipasi = parseFloat(val);
+        }
+        count++;
+      }
+      if (note) state.grades[s.nim].catatan = note;
+    } else if (type === 'partisipasi') {
+      const valEl = document.getElementById(`input-grade-part-${s.nim}`);
+      const noteEl = document.getElementById(`input-note-part-${s.nim}`);
+      const val = valEl ? valEl.value.trim() : '';
+      const note = noteEl ? noteEl.value.trim() : '';
+      if (val !== '') {
+        state.grades[s.nim].partisipasi = parseFloat(val);
+        count++;
+      }
+      if (note) state.grades[s.nim].catatan = note;
+    }
+  });
+
+  localStorage.setItem('ut_grades', JSON.stringify(state.grades));
+  renderApp();
+  showToast(`Berhasil menyimpan seluruh nilai mahasiswa Kelas ${classId}!`, 'success');
 };
 
 window.handleModalLogin = function(e) {
@@ -1549,9 +1676,10 @@ function renderTutorialDetailView() {
           ${renderTabButton('pemantik', 'lightbulb', '3. Pertanyaan Pemantik')}
           ${renderTabButton('materi', 'menu_book', '4. Materi')}
           ${renderTabButton('video', 'smart_display', '5. Video Pembelajaran')}
-          ${renderTabButton('lkpd', 'edit_document', '6. LKPD')}
-          ${renderTabButton('asesmen', 'quiz', '7. Asesmen')}
-          ${renderTabButton('refleksi', 'psychology_alt', '8. Refleksi')}
+          ${renderTabButton('lkpd', 'edit_document', isTutor ? '6. LKPD & Penilaian' : '6. LKPD')}
+          ${renderTabButton('asesmen', 'quiz', isTutor ? '7. Asesmen & Tugas' : '7. Asesmen')}
+          ${renderTabButton('refleksi', 'psychology_alt', isTutor ? '8. Refleksi & Partisipasi' : '8. Refleksi')}
+          ${isTutor ? renderTabButton('gradebook', 'table_chart', '9. Rekap Nilai Akhir') : ''}
         </div>
       </section>
 
@@ -1581,11 +1709,39 @@ function renderTabButton(tabId, icon, label) {
 
 function switchTab(tabId) {
   state.currentTab = tabId;
+  state.tutorTab = tabId;
+  saveLocalState();
   renderApp();
 }
 
-// Render Content for each of the 8 Menus
+// Render Content for each of the 8 Menus (plus Gradebook for Tutor)
 function renderActiveTabContent(tut, course) {
+  if (state.currentUser && state.currentUser.role === 'tutor') {
+    const students = STUDENTS_DATA.filter(s => s.kelas === course.id);
+    switch (state.currentTab) {
+      case 'kelompok':
+        return renderTutorKelompokMenu(tut, course, students);
+      case 'rat_sat':
+        return renderMenuRatSat(tut, course);
+      case 'pemantik':
+        return renderTutorPemantikMenu(tut, course, students);
+      case 'materi':
+        return renderMenuMateri(tut, course);
+      case 'video':
+        return renderMenuVideo(tut, course);
+      case 'lkpd':
+        return renderTutorLkpdMenu(tut, course, students);
+      case 'asesmen':
+        return renderTutorAsesmenMenu(tut, course, students);
+      case 'refleksi':
+        return renderTutorRefleksiMenu(tut, course, students);
+      case 'gradebook':
+        return renderTutorGradebookTab(course.id, course, students);
+      default:
+        return renderTutorLkpdMenu(tut, course, students);
+    }
+  }
+
   switch (state.currentTab) {
     case 'kelompok':
       return renderMenuKelompok(tut, course);
@@ -2291,8 +2447,8 @@ function renderTutorManagementView() {
   const selectedClass = state.currentClassId || '5A';
   const studentsInClass = STUDENTS_DATA.filter(s => s.kelas === selectedClass);
   const course = COURSES_DATA[selectedClass] || COURSES_DATA['5A'];
-  const activeTab = state.tutorTab || 'gradebook';
-  const sesiFilter = state.tutorSesiFilter || 1;
+  const activeTab = state.tutorTab || 'lkpd';
+  const sesiFilter = state.tutorSesiFilter || state.currentSesi || 1;
   const tutorials = TUTORIALS_DATA[selectedClass] || TUTORIALS_DATA['5A'];
   const currentTut = tutorials.find(t => t.sesi === sesiFilter) || tutorials[0];
 
@@ -2318,9 +2474,9 @@ function renderTutorManagementView() {
     : 'Belum Ada Nilai';
 
   return `
-    <div class="flex flex-col space-y-6 pb-20">
+    <div class="flex flex-col space-y-6 pb-24">
       
-      <!-- Tutor Header Card -->
+      <!-- Tutor Executive Header Card -->
       <section class="rounded-3xl bg-gradient-to-r from-[#003367] via-[#004990] to-[#0b2545] text-white p-5 sm:p-7 shadow-lg border border-blue-900/40 relative overflow-hidden">
         <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
           <div class="flex items-center gap-4">
@@ -2328,7 +2484,7 @@ function renderTutorManagementView() {
               <img src="${TUTOR_DATA.foto}" alt="${TUTOR_DATA.nama}" class="w-full h-full object-cover object-top" />
             </div>
             <div class="space-y-1">
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center gap-2">
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wide">
                   Tutor Pengampu Resmi
                 </span>
@@ -2367,7 +2523,7 @@ function renderTutorManagementView() {
             const cInfo = COURSES_DATA[cid];
             const count = STUDENTS_DATA.filter(s => s.kelas === cid).length;
             return `
-              <button onclick="navigateTo('tutor-view', {classId: '${cid}'})" class="p-3.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-[#003367] text-white border-[#003367] shadow-md ring-2 ring-[#003367]/20' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}">
+              <button onclick="switchTutorClass('${cid}')" class="p-3.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-[#003367] text-white border-[#003367] shadow-md ring-2 ring-[#003367]/20' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}">
                 <div class="flex items-center justify-between mb-1">
                   <span class="text-xs font-extrabold ${isSel ? 'text-amber-300' : 'text-[#004990]'}">KELAS ${cid}</span>
                   <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isSel ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-800'}">${count} Mhs</span>
@@ -2380,62 +2536,698 @@ function renderTutorManagementView() {
         </div>
       </section>
 
-      <!-- Class KPI Metrics -->
-      <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Mahasiswa</span>
-          <span class="text-xl sm:text-2xl font-extrabold text-[#003367]">${studentsInClass.length} <span class="text-xs font-semibold text-slate-500">Orang</span></span>
+      <!-- 8-Session Selector Bar (Per Pertemuan) -->
+      <section class="space-y-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Pertemuan Tutorial (Sesi 1 s.d. 8):</span>
+          <span class="text-xs font-bold text-slate-700">Terpilih: <strong>Tutorial Sesi ${currentTut.sesi}</strong></span>
         </div>
-        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Mata Kuliah & Bobot</span>
-          <span class="text-base sm:text-lg font-extrabold text-slate-900">${course.kode} <span class="text-xs font-bold text-amber-600">(${course.sks} SKS)</span></span>
-        </div>
-        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rata-rata Nilai Kelas</span>
-          <span class="text-xl sm:text-2xl font-extrabold ${gradedCount > 0 ? 'text-emerald-600' : 'text-slate-400'}">${classAverage} <span class="text-xs font-bold ${gradedCount > 0 ? 'text-emerald-800 bg-emerald-100' : 'text-slate-500 bg-slate-100'} px-2 py-0.5 rounded-full">${averageStatus}</span></span>
-        </div>
-        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rangkaian Sesi</span>
-          <span class="text-xl sm:text-2xl font-extrabold text-amber-600">8 Sesi <span class="text-xs font-semibold text-slate-500">(3 TTM)</span></span>
-        </div>
-      </section>
 
-      <!-- Tutor Activity Sub-Tabs -->
-      <section class="border-b border-slate-200">
         <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button onclick="switchTutorTab('gradebook')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'gradebook' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-            <span class="material-symbols-outlined text-[18px]">assessment</span>
-            <span>1. Rekapitulasi & Lembar Nilai Akhir</span>
-          </button>
-          <button onclick="switchTutorTab('lkpd')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'lkpd' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-            <span class="material-symbols-outlined text-[18px]">edit_note</span>
-            <span>2. Penilaian Tugas LKPD</span>
-          </button>
-          <button onclick="switchTutorTab('diskusi')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'diskusi' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-            <span class="material-symbols-outlined text-[18px]">forum</span>
-            <span>3. Forum Pemantik & Diskusi</span>
-          </button>
-          <button onclick="switchTutorTab('kelompok')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'kelompok' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
-            <span class="material-symbols-outlined text-[18px]">groups</span>
-            <span>4. Kelompok Belajar</span>
-          </button>
+          ${[1, 2, 3, 4, 5, 6, 7, 8].map(s => {
+            const isSel = currentTut.sesi === s;
+            const isTTM = (s === 3 || s === 5 || s === 7);
+            const ttmLabel = s === 3 ? 'Tugas 1' : (s === 5 ? 'Tugas 2' : 'Tugas 3');
+            return `
+              <button onclick="switchTutorSesi(${s})" class="flex-shrink-0 px-3.5 py-2.5 rounded-2xl text-xs font-extrabold transition-all flex items-center gap-1.5 border ${
+                isSel
+                  ? 'bg-[#003367] text-white border-[#003367] shadow-md ring-2 ring-[#003367]/20 scale-102'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+              }">
+                <span class="w-5 h-5 rounded-full ${isSel ? 'bg-amber-400 text-slate-950' : 'bg-slate-100 text-slate-700'} flex items-center justify-center text-[10px] font-black">${s}</span>
+                <span>Sesi ${s}</span>
+                ${isTTM ? `
+                  <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${isSel ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-900 border border-amber-300'}">
+                    ${ttmLabel}
+                  </span>
+                ` : ''}
+              </button>
+            `;
+          }).join('')}
         </div>
       </section>
 
-      <!-- Sub-Tab Content -->
-      <section>
-        ${activeTab === 'gradebook' ? renderTutorGradebookTab(selectedClass, course, studentsInClass) : ''}
-        ${activeTab === 'lkpd' ? renderTutorLkpdTab(selectedClass, course, studentsInClass, sesiFilter, currentTut) : ''}
-        ${activeTab === 'diskusi' ? renderTutorDiskusiTab(selectedClass, course, studentsInClass, sesiFilter, currentTut) : ''}
-        ${activeTab === 'kelompok' ? renderTutorKelompokTab(selectedClass, course) : ''}
+      <!-- SESSION HEADER CARD (IDENTIK DENGAN MAHASISWA) -->
+      <section class="rounded-3xl bg-gradient-to-r from-[#003367] to-[#004990] text-white p-6 sm:p-7 shadow-md relative overflow-hidden">
+        <div class="relative z-10 flex flex-col space-y-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-[#F7B500] text-slate-900 shadow-xs">
+              TUTORIAL ${currentTut.sesi} DARI 8
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-md">
+              Kelas ${course.id} • ${course.kode} (${course.sks} SKS)
+            </span>
+            ${currentTut.tugas_khusus ? `
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950 flex items-center gap-1 shadow-xs">
+                <span class="material-symbols-outlined text-[15px]">assignment</span>
+                ${currentTut.tugas_khusus} (BOBOT UT 70%)
+              </span>
+            ` : ''}
+          </div>
+
+          <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight">
+            ${currentTut.judul}
+          </h2>
+
+          <div class="flex flex-wrap items-center gap-4 text-xs text-blue-100 font-medium">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-amber-300">event</span>
+              <span>${currentTut.tanggal} (${currentTut.waktu})</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-amber-300">target</span>
+              <span class="truncate max-w-md">${currentTut.cpmk}</span>
+            </div>
+          </div>
+        </div>
       </section>
+
+      <!-- THE 8 STRUCTURED MENUS + REKAP NILAI TAB BAR (SAMA PERSIS DENGAN MAHASISWA) -->
+      <section class="sticky top-14 sm:top-16 z-30 bg-slate-50/95 backdrop-blur-md pt-2 pb-2">
+        <div class="flex items-center gap-1.5 overflow-x-auto p-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-sm no-scrollbar">
+          ${renderTutorTabButton('kelompok', 'group', '1. Kelompok')}
+          ${renderTutorTabButton('rat_sat', 'description', '2. RAT / SAT')}
+          ${renderTutorTabButton('pemantik', 'lightbulb', '3. Pemantik & Diskusi')}
+          ${renderTutorTabButton('materi', 'menu_book', '4. Materi Inisiasi')}
+          ${renderTutorTabButton('video', 'smart_display', '5. Video Pembelajaran')}
+          ${renderTutorTabButton('lkpd', 'edit_document', '6. LKPD & Penilaian')}
+          ${renderTutorTabButton('asesmen', 'quiz', '7. Asesmen & Tugas')}
+          ${renderTutorTabButton('refleksi', 'psychology_alt', '8. Refleksi & Partisipasi')}
+          ${renderTutorTabButton('gradebook', 'table_chart', '9. Rekap Nilai Akhir')}
+        </div>
+      </section>
+
+      <!-- ACTIVE TAB CONTENT WITH EMBEDDED TUTOR GRADING INTERFACES -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-7 min-h-[420px]">
+        ${renderActiveTutorTabContent(activeTab, currentTut, course, studentsInClass)}
+      </div>
 
     </div>
   `;
 }
 
+function renderTutorTabButton(tabId, icon, label) {
+  const isActive = (state.tutorTab || 'lkpd') === tabId;
+  return `
+    <button onclick="switchTutorTab('${tabId}')" 
+            class="flex-shrink-0 px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+              isActive 
+                ? 'bg-[#003367] text-white shadow-md' 
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }">
+      <span class="material-symbols-outlined text-[18px] ${isActive ? 'text-[#F7B500]' : 'text-slate-400'}">${icon}</span>
+      <span>${label}</span>
+    </button>
+  `;
+}
+
+function renderActiveTutorTabContent(activeTab, tut, course, students) {
+  switch (activeTab) {
+    case 'kelompok':
+      return renderTutorKelompokMenu(tut, course, students);
+    case 'rat_sat':
+      return renderMenuRatSat(tut, course);
+    case 'pemantik':
+      return renderTutorPemantikMenu(tut, course, students);
+    case 'materi':
+      return renderMenuMateri(tut, course);
+    case 'video':
+      return renderMenuVideo(tut, course);
+    case 'lkpd':
+      return renderTutorLkpdMenu(tut, course, students);
+    case 'asesmen':
+      return renderTutorAsesmenMenu(tut, course, students);
+    case 'refleksi':
+      return renderTutorRefleksiMenu(tut, course, students);
+    case 'gradebook':
+      return renderTutorGradebookTab(course.id, course, students);
+    default:
+      return renderTutorLkpdMenu(tut, course, students);
+  }
+}
+
 // ----------------------------------------------------------------------------
-// TAB 1: REKAPITULASI NILAI AKHIR (GRADEBOOK)
+// MENU 1 (TUTOR): PEMBAGIAN KELOMPOK
+// ----------------------------------------------------------------------------
+function renderTutorKelompokMenu(tut, course, students) {
+  const groups = GROUPS_BY_CLASS[course.id] || [];
+
+  return `
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wide">Menu 1 • Kolaborasi Belajar Mahasiswa</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Pembagian Kelompok Diskusi: Kelas ${course.id}</h2>
+        </div>
+        <span class="text-xs font-bold text-[#004990] bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+          Total: ${groups.length} Kelompok Terdaftar
+        </span>
+      </div>
+
+      <!-- Assigned Topic Info Box -->
+      <div class="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-3">
+        <span class="material-symbols-outlined text-[24px] text-[#004990] mt-0.5">assignment</span>
+        <div>
+          <span class="text-xs font-bold text-[#003367] block">Topik Diskusi Kelompok Sesi ${tut.sesi}:</span>
+          <p class="text-xs sm:text-sm text-slate-800 font-semibold mt-0.5">${tut.topik_kelompok}</p>
+        </div>
+      </div>
+
+      <!-- Groups Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        ${groups.map(grp => `
+          <div class="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col space-y-3 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-[#003367] text-white font-extrabold text-xs flex items-center justify-center">
+                  K${grp.nomor}
+                </div>
+                <div>
+                  <h3 class="text-sm font-extrabold text-slate-900">${grp.nama_kelompok}</h3>
+                  <span class="text-[11px] text-slate-500 font-medium">${grp.anggota.length} Anggota Mahasiswa</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ketua Kelompok -->
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-2.5 text-xs">
+              <span class="material-symbols-outlined text-[18px] text-amber-500">crown</span>
+              <div class="flex flex-col min-w-0">
+                <span class="text-[10px] font-bold text-slate-400 uppercase">Koordinator / Ketua</span>
+                <span class="font-bold text-slate-900 truncate">${grp.ketua}</span>
+              </div>
+            </div>
+
+            <!-- Anggota List -->
+            <div class="space-y-1.5 pt-1">
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Daftar Anggota:</span>
+              <ul class="space-y-1 text-xs">
+                ${grp.anggota.map((m, idx) => `
+                  <li class="flex items-center justify-between py-1 px-2 rounded-lg hover:bg-slate-50 text-slate-700">
+                    <div class="flex items-center gap-2 truncate">
+                      <span class="text-slate-400 text-[10px] font-mono">${idx + 1}.</span>
+                      <span class="font-medium truncate">${m.nama}</span>
+                    </div>
+                    <span class="font-mono text-[10px] text-slate-400">${m.nim}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// MENU 3 (TUTOR): PERTANYAAN PEMANTIK & DISKUSI
+// ----------------------------------------------------------------------------
+function renderTutorPemantikMenu(tut, course, students) {
+  const commentKey = `${course.id}_sesi${tut.sesi}`;
+  const existingComments = state.comments[commentKey] || [];
+
+  return `
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wide">Menu 3 • Diskusi & Pemikiran Kritis</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Forum Pertanyaan Pemantik Tutorial Sesi ${tut.sesi}</h2>
+        </div>
+      </div>
+
+      <!-- Pemantik Prompts Box -->
+      <div class="p-5 rounded-2xl bg-amber-50/70 border border-amber-200/90 space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[22px] text-amber-600">lightbulb</span>
+          <span class="text-xs font-extrabold text-amber-950 uppercase tracking-wide">Pertanyaan Pemantik dari Tutor:</span>
+        </div>
+        <div class="space-y-2">
+          ${tut.pemantik.map((p, idx) => `
+            <div class="flex items-start gap-2.5 text-xs sm:text-sm font-semibold text-slate-800">
+              <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${idx + 1}</span>
+              <p class="leading-relaxed">${p}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Comments Stream -->
+      <div class="space-y-3">
+        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">
+          Tanggapan Masuk dari Mahasiswa Kelas ${course.id} (${existingComments.length}):
+        </h4>
+
+        ${existingComments.length === 0 ? `
+          <div class="p-6 rounded-2xl border border-dashed border-slate-300 text-center text-xs text-slate-500">
+            Belum ada tanggapan mahasiswa untuk sesi ini.
+          </div>
+        ` : `
+          <div class="space-y-2.5">
+            ${existingComments.map(c => `
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#003367] font-extrabold text-xs flex items-center justify-center flex-shrink-0">
+                  ${c.nama.charAt(0)}
+                </div>
+                <div class="flex-1 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-900">${c.nama}</span>
+                    <span class="text-[10px] text-slate-400">${c.waktu}</span>
+                  </div>
+                  <p class="text-xs text-slate-700 leading-relaxed">${c.teks}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+
+      <!-- Tutor Direct Post Input -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3">
+        <span class="text-xs font-bold text-slate-800 block">Kirim Tanggapan / Penguatan Tutor:</span>
+        <textarea id="comment-text-input" rows="3" placeholder="Tuliskan ulasan atau tanggapan pembimbingan untuk mahasiswa..." class="w-full p-3.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] text-xs sm:text-sm bg-slate-50"></textarea>
+        <div class="flex items-center justify-end">
+          <button onclick="submitComment('${commentKey}')" class="h-10 px-5 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-bold text-xs shadow-sm active:scale-95 transition flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">send</span>
+            <span>Posting Tanggapan Tutor</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// MENU 6 (TUTOR): LKPD DENGAN PANEL PENILAIAN LENGKAP
+// ----------------------------------------------------------------------------
+function renderTutorLkpdMenu(tut, course, students) {
+  return `
+    <div class="space-y-6">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wide">Menu 6 • Penugasan Lembar Kerja Peserta Didik</span>
+          <h2 class="text-xl font-extrabold text-slate-900">LKPD Sesi ${tut.sesi}: ${tut.lkpd_title}</h2>
+        </div>
+        <button onclick="showToast('Mengunduh master berkas LKPD Sesi ${tut.sesi}...', 'info')" class="h-9 px-3.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition self-start sm:self-auto">
+          <span class="material-symbols-outlined text-[17px] text-[#004990]">download</span>
+          <span>Unduh Format Soal LKPD</span>
+        </button>
+      </div>
+
+      <!-- LKPD Overview Info Card for Tutor -->
+      <div class="p-5 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-[#004990]">assignment</span>
+          <h3 class="text-sm font-extrabold text-slate-900">Instruksi & Kasus LKPD Mahasiswa</h3>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+          ${tut.lkpd_desc}
+        </p>
+      </div>
+
+      <!-- TUTOR GRADING ROSTER & PANEL FOR LKPD -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="space-y-0.5">
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#004990] text-[20px]">grading</span>
+              <span>Lembar Penilaian & Evaluasi LKPD Sesi ${tut.sesi}</span>
+            </h3>
+            <p class="text-xs text-slate-500">
+              Input nilai (0 - 100) dan berikan catatan evaluasi untuk setiap mahasiswa Kelas ${course.id}.
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="saveAllInlineGrades('${course.id}', 'lkpd', ${tut.sesi})" class="h-9 px-4 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition">
+              <span class="material-symbols-outlined text-[17px]">save</span>
+              <span>Simpan Semua Nilai LKPD</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                <th class="py-3 px-3">No</th>
+                <th class="py-3 px-3">Mahasiswa (NIM)</th>
+                <th class="py-3 px-3 text-center">Status Berkas</th>
+                <th class="py-3 px-3 text-center w-28">Nilai LKPD (0-100)</th>
+                <th class="py-3 px-3">Catatan / Umpan Balik Tutor</th>
+                <th class="py-3 px-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+              ${students.map((s, idx) => {
+                const subKey = `${s.nim}_${course.id}_s${tut.sesi}`;
+                const hasSub = state.submissions && state.submissions[subKey];
+                const g = state.grades && state.grades[s.nim];
+                const lkpdScore = (g && g.lkpd && g.lkpd[tut.sesi] !== undefined) 
+                  ? g.lkpd[tut.sesi] 
+                  : ((g && g.partisipasi !== undefined && g.partisipasi !== '') ? g.partisipasi : '');
+                const noteVal = (g && g.catatan) || '';
+
+                return `
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="py-3 px-3">
+                      <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                      <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      ${hasSub ? `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          Sudah Unggah
+                        </span>
+                      ` : `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">
+                          Belum Ada Berkas
+                        </span>
+                      `}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      <input type="number" min="0" max="100" id="input-grade-lkpd-${s.nim}" 
+                             value="${lkpdScore}" placeholder="0-100"
+                             class="w-20 px-2 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#004990] text-center font-extrabold text-xs bg-white text-slate-900 shadow-2xs" />
+                    </td>
+                    <td class="py-3 px-3">
+                      <input type="text" id="input-note-lkpd-${s.nim}" 
+                             value="${noteVal}" placeholder="Catatan evaluasi penguasaan materi..." 
+                             class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[#004990] text-xs bg-white text-slate-800" />
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                      <button onclick="saveInlineGrade('${s.nim}', 'lkpd', ${tut.sesi})" 
+                              class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] shadow-2xs transition">
+                        Simpan
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// MENU 7 (TUTOR): ASESMEN & PENILAIAN TUGAS TUTORIAL / KUIS
+// ----------------------------------------------------------------------------
+function renderTutorAsesmenMenu(tut, course, students) {
+  const isTTM = (tut.sesi === 3 || tut.sesi === 5 || tut.sesi === 7);
+  const ttmIndex = tut.sesi === 3 ? 1 : (tut.sesi === 5 ? 2 : 3);
+  const ttmField = `tugas${ttmIndex}`;
+
+  return `
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wide">Menu 7 • Evaluasi & Pengukuran Capaian</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Asesmen Pembelajaran Tutorial Sesi ${tut.sesi}</h2>
+        </div>
+      </div>
+
+      ${isTTM ? `
+        <!-- TUGAS TUTORIAL WAJIB CALLOUT -->
+        <div class="p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 shadow-sm space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-amber-700">stars</span>
+            <span class="text-sm font-extrabold text-amber-950 uppercase tracking-wide">${tut.tugas_khusus} (BOBOT RESMI 70% UT)</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+            Pada pertemuan Sesi ${tut.sesi}, terdapat <strong>Tugas Tutorial Wajib ${ttmIndex} (TTM ${ttmIndex})</strong>. Nilai yang Anda input di tabel bawah akan langsung otomatis tersimpan ke kolom <strong>Tugas ${ttmIndex}</strong> pada Rekapitulasi Nilai Akhir mata kuliah ${course.kode}.
+          </p>
+          <div class="pt-1 flex flex-wrap gap-2">
+            <button onclick="showToast('Lembar Soal Tugas Tutorial ${ttmIndex} diunduh.', 'success')" class="h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 transition shadow-2xs">
+              <span class="material-symbols-outlined text-[17px]">download</span>
+              <span>Unduh Lembar Soal Tugas ${ttmIndex}</span>
+            </button>
+            <button onclick="showToast('Rubrik penilaian tugas 100 poin dibuka.', 'info')" class="h-9 px-4 rounded-xl bg-white text-slate-700 border border-slate-300 font-bold text-xs flex items-center gap-1.5 transition">
+              <span class="material-symbols-outlined text-[17px]">rubric</span>
+              <span>Lihat Rubrik Skor 100</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TUGAS TUTORIAL GRADING PANEL -->
+        <div class="rounded-2xl border border-amber-300 bg-white shadow-2xs overflow-hidden">
+          <div class="p-4 bg-amber-50/80 border-b border-amber-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div class="space-y-0.5">
+              <h3 class="text-sm font-extrabold text-amber-950 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-700 text-[20px]">fact_check</span>
+                <span>Panel Penilaian Tugas Tutorial Wajib ${ttmIndex} (Sesi ${tut.sesi})</span>
+              </h3>
+              <p class="text-xs text-slate-600">
+                Data nilai langsung mengkalkulasi Nilai Akhir (Bobot: 70% Avg Tugas + 30% Partisipasi).
+              </p>
+            </div>
+
+            <button onclick="saveAllInlineGrades('${course.id}', 'tugas', ${tut.sesi})" class="h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition">
+              <span class="material-symbols-outlined text-[17px]">save</span>
+              <span>Simpan Semua Nilai Tugas ${ttmIndex}</span>
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="bg-amber-50/50 border-b border-amber-200 text-slate-600 font-bold uppercase text-[10px]">
+                  <th class="py-3 px-3">No</th>
+                  <th class="py-3 px-3">Mahasiswa (NIM)</th>
+                  <th class="py-3 px-3 text-center w-28">Nilai Tugas ${ttmIndex} (0-100)</th>
+                  <th class="py-3 px-3">Catatan Rubrik & Evaluasi</th>
+                  <th class="py-3 px-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+                ${students.map((s, idx) => {
+                  const g = state.grades && state.grades[s.nim];
+                  const currentScore = (g && g[ttmField] !== undefined && g[ttmField] !== '') ? g[ttmField] : '';
+                  const noteVal = (g && g.catatan) || '';
+
+                  return `
+                    <tr class="hover:bg-amber-50/30 transition">
+                      <td class="py-3 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                      <td class="py-3 px-3">
+                        <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                        <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                      </td>
+                      <td class="py-3 px-3 text-center">
+                        <input type="number" min="0" max="100" id="input-grade-tugas-${s.nim}" 
+                               value="${currentScore}" placeholder="0-100"
+                               class="w-20 px-2 py-1.5 rounded-lg border border-amber-300 focus:ring-2 focus:ring-amber-500 text-center font-black text-xs bg-amber-50/40 text-slate-900 shadow-2xs" />
+                      </td>
+                      <td class="py-3 px-3">
+                        <input type="text" id="input-note-tugas-${s.nim}" 
+                               value="${noteVal}" placeholder="Catatan rubrik penilaian..." 
+                               class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[#004990] text-xs bg-white text-slate-800" />
+                      </td>
+                      <td class="py-3 px-3 text-right">
+                        <button onclick="saveInlineGrade('${s.nim}', 'tugas', ${tut.sesi})" 
+                                class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[11px] shadow-2xs transition">
+                          Simpan
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ` : `
+        <!-- FORMATIVE QUIZ PREVIEW & ASSESSMENT -->
+        <div class="space-y-4">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#004990] text-[20px]">quiz</span>
+              <span>Preview Soal Kuis Formatif Sesi ${tut.sesi} (${tut.quiz.length} Soal)</span>
+            </h3>
+            <p class="text-xs text-slate-600">
+              Kuis formatif ini diselesaikan oleh mahasiswa untuk menguji pemahaman konsep inisiasi.
+            </p>
+          </div>
+
+          <!-- KUIS FORMATIF GRADING PANEL -->
+          <div class="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900">Evaluasi Pemahaman Kuis Mahasiswa (Sesi ${tut.sesi})</h3>
+                <p class="text-xs text-slate-500">Pantau dan berikan nilai latihan mahasiswa.</p>
+              </div>
+              <button onclick="saveAllInlineGrades('${course.id}', 'tugas', ${tut.sesi})" class="h-9 px-4 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center gap-1.5 transition">
+                <span class="material-symbols-outlined text-[17px]">save</span>
+                <span>Simpan Nilai Latihan</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                    <th class="py-3 px-3">No</th>
+                    <th class="py-3 px-3">Mahasiswa (NIM)</th>
+                    <th class="py-3 px-3 text-center w-28">Nilai Latihan (0-100)</th>
+                    <th class="py-3 px-3">Catatan Tutor</th>
+                    <th class="py-3 px-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+                  ${students.map((s, idx) => {
+                    const g = state.grades && state.grades[s.nim];
+                    const kuisScore = (g && g.kuis && g.kuis[tut.sesi] !== undefined) ? g.kuis[tut.sesi] : '';
+                    const noteVal = (g && g.catatan) || '';
+
+                    return `
+                      <tr class="hover:bg-slate-50 transition">
+                        <td class="py-3 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                        <td class="py-3 px-3">
+                          <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                          <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                        </td>
+                        <td class="py-3 px-3 text-center">
+                          <input type="number" min="0" max="100" id="input-grade-tugas-${s.nim}" 
+                                 value="${kuisScore}" placeholder="0-100"
+                                 class="w-20 px-2 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#004990] text-center font-bold text-xs bg-white text-slate-900" />
+                        </td>
+                        <td class="py-3 px-3">
+                          <input type="text" id="input-note-tugas-${s.nim}" 
+                                 value="${noteVal}" placeholder="Catatan pemahaman..." 
+                                 class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs" />
+                        </td>
+                        <td class="py-3 px-3 text-right">
+                          <button onclick="saveInlineGrade('${s.nim}', 'tugas', ${tut.sesi})" 
+                                  class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px]">
+                            Simpan
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// MENU 8 (TUTOR): REFLEKSI DENGAN PANEL PENILAIAN PARTISIPASI (30%)
+// ----------------------------------------------------------------------------
+function renderTutorRefleksiMenu(tut, course, students) {
+  return `
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wide">Menu 8 • Refleksi Diri & Partisipasi</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Refleksi Belajar & Partisipasi Sesi ${tut.sesi}</h2>
+        </div>
+      </div>
+
+      <!-- Overview Box -->
+      <div class="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-2">
+        <h3 class="text-sm font-extrabold text-amber-950 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600 text-[20px]">psychology_alt</span>
+          <span>Komponen Penilaian Partisipasi Mahasiswa (Bobot Resmi 30% UT)</span>
+        </h3>
+        <p class="text-xs sm:text-sm text-slate-700 leading-relaxed">
+          Sesuai ketentuan Universitas Terbuka, nilai partisipasi berbobot <strong>30%</strong> dari total nilai akhir tutorial, yang dinilai dari keaktifan diskusi, pengumpulan lembar refleksi 3-2-1, dan kehadiran mahasiswa. Nilai yang Anda input di panel ini akan langsung masuk ke komponen Partisipasi Rekap Nilai UT.
+        </p>
+      </div>
+
+      <!-- TUTOR GRADING PANEL FOR PARTICIPATION & REFLECTION -->
+      <div class="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="space-y-0.5">
+            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#004990] text-[20px]">award_star</span>
+              <span>Panel Penilaian Partisipasi & Refleksi Kelas ${course.id}</span>
+            </h3>
+            <p class="text-xs text-slate-500">
+              Input nilai partisipasi (skala 0 - 100) untuk seluruh mahasiswa.
+            </p>
+          </div>
+
+          <button onclick="saveAllInlineGrades('${course.id}', 'partisipasi', ${tut.sesi})" class="h-9 px-4 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition">
+            <span class="material-symbols-outlined text-[17px]">save</span>
+            <span>Simpan Semua Nilai Partisipasi</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                <th class="py-3 px-3">No</th>
+                <th class="py-3 px-3">Mahasiswa (NIM)</th>
+                <th class="py-3 px-3 text-center">Status Refleksi</th>
+                <th class="py-3 px-3 text-center w-28">Nilai Partisipasi (30%)</th>
+                <th class="py-3 px-3">Catatan Pembinaan Tutor</th>
+                <th class="py-3 px-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+              ${students.map((s, idx) => {
+                const refKey = `${course.id}_sesi${tut.sesi}`;
+                const hasRef = state.reflections && state.reflections[refKey];
+                const g = state.grades && state.grades[s.nim];
+                const partScore = (g && g.partisipasi !== undefined && g.partisipasi !== '') ? g.partisipasi : '';
+                const noteVal = (g && g.catatan) || '';
+
+                return `
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="py-3 px-3">
+                      <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                      <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      ${hasRef ? `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          Sudah Mengisi
+                        </span>
+                      ` : `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">
+                          Belum Mengisi
+                        </span>
+                      `}
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      <input type="number" min="0" max="100" id="input-grade-part-${s.nim}" 
+                             value="${partScore}" placeholder="0-100"
+                             class="w-20 px-2 py-1.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-[#004990] text-center font-extrabold text-xs bg-white text-slate-900 shadow-2xs" />
+                    </td>
+                    <td class="py-3 px-3">
+                      <input type="text" id="input-note-part-${s.nim}" 
+                             value="${noteVal}" placeholder="Catatan pembinaan / apresiasi..." 
+                             class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-[#004990] text-xs bg-white text-slate-800" />
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                      <button onclick="saveInlineGrade('${s.nim}', 'partisipasi', ${tut.sesi})" 
+                              class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] shadow-2xs transition">
+                        Simpan
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// TAB 9: REKAPITULASI NILAI AKHIR (GRADEBOOK LENGKAP UT)
 // ----------------------------------------------------------------------------
 function renderTutorGradebookTab(classId, course, students) {
   return `
@@ -2551,231 +3343,6 @@ function renderTutorGradebookTab(classId, course, students) {
             }).join('')}
           </tbody>
         </table>
-      </div>
-    </div>
-  `;
-}
-
-// ----------------------------------------------------------------------------
-// TAB 2: PENILAIAN TUGAS LKPD PER SESI
-// ----------------------------------------------------------------------------
-function renderTutorLkpdTab(classId, course, students, sesiFilter, currentTut) {
-  return `
-    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
-      <!-- Sesi Selector Pills -->
-      <div class="space-y-2">
-        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pilih Sesi Tutorial:</span>
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          ${[1, 2, 3, 4, 5, 6, 7, 8].map(s => `
-            <button onclick="switchTutorSesiFilter(${s})" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 ${sesiFilter === s ? 'bg-[#003367] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-              <span>Sesi ${s}</span>
-              ${s === 3 || s === 5 || s === 7 ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
-            </button>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- LKPD Info Card -->
-      <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#003367] text-white uppercase">Lembar Kerja Peserta Didik (LKPD) Sesi ${sesiFilter}</span>
-          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">${currentTut.lkpd_title || 'LKPD Sesi ' + sesiFilter + ': Analisis Kasus Pembelajaran'}</h3>
-          <p class="text-xs text-slate-600 mt-0.5">${currentTut.cpmk}</p>
-        </div>
-        <button onclick="showToast('Mengunduh lembar acuan LKPD Sesi ${sesiFilter}...', 'info')" class="h-9 px-3.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition flex-shrink-0">
-          <span class="material-symbols-outlined text-[17px] text-[#004990]">download</span>
-          <span>Unduh Format LKPD</span>
-        </button>
-      </div>
-
-      <!-- Submission and Grading Roster -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Status Pengumpulan & Penilaian Mahasiswa (${students.length} Mhs):</h4>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
-                <th class="py-2.5 px-3">No</th>
-                <th class="py-2.5 px-3">Mahasiswa</th>
-                <th class="py-2.5 px-3">File Dokumen LKPD</th>
-                <th class="py-2.5 px-3 text-center">Status</th>
-                <th class="py-2.5 px-3 text-center">Nilai LKPD</th>
-                <th class="py-2.5 px-3">Umpan Balik Tutor</th>
-                <th class="py-2.5 px-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
-              ${students.map((s, idx) => {
-                const subKey = `${s.nim}_${selectedClass}_s${sesiFilter}`;
-                const submission = state.submissions && state.submissions[subKey];
-                const g = state.grades && state.grades[s.nim];
-                const hasScore = g && g.partisipasi !== '' && g.partisipasi !== undefined;
-                const score = hasScore ? g.partisipasi : '-';
-                const hasSubmission = !!submission;
-
-                return `
-                  <tr class="hover:bg-slate-50/70 transition">
-                    <td class="py-2.5 px-3 text-slate-400 font-mono">${idx + 1}</td>
-                    <td class="py-2.5 px-3">
-                      <span class="font-extrabold text-slate-900 block">${s.nama}</span>
-                      <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
-                    </td>
-                    <td class="py-2.5 px-3">
-                      ${hasSubmission ? `
-                        <span class="inline-flex items-center gap-1 font-mono text-[11px] text-[#004990] font-semibold">
-                          <span class="material-symbols-outlined text-[15px]">description</span>
-                          ${submission.filename || `LKPD_${selectedClass}_S${sesiFilter}_${s.nim}.pdf`}
-                        </span>
-                      ` : `
-                        <span class="text-slate-400 italic text-[11px]">Belum ada berkas</span>
-                      `}
-                    </td>
-                    <td class="py-2.5 px-3 text-center">
-                      ${hasSubmission ? `
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Sudah Unggah</span>
-                      ` : `
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">Belum Mengumpulkan</span>
-                      `}
-                    </td>
-                    <td class="py-2.5 px-3 text-center font-extrabold ${hasScore ? 'text-slate-900 text-sm' : 'text-slate-400'}">${score}</td>
-                    <td class="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${(g && g.catatan) || ''}">
-                      ${(g && g.catatan) ? g.catatan : '<span class="text-slate-300 italic">Belum ada umpan balik</span>'}
-                    </td>
-                    <td class="py-2.5 px-3 text-right">
-                      <button onclick="openGradeModal('${s.nim}')" class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] transition">
-                        Beri Nilai & Catatan
-                      </button>
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// ----------------------------------------------------------------------------
-// TAB 3: PEMANTAUAN FORUM PEMANTIK & DISKUSI
-// ----------------------------------------------------------------------------
-function renderTutorDiskusiTab(classId, course, students, sesiFilter, currentTut) {
-  const commentKey = `${classId}_sesi${sesiFilter}`;
-  const existingComments = state.comments[commentKey] || [];
-
-  return `
-    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
-      <!-- Sesi Selector Pills -->
-      <div class="space-y-2">
-        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pilih Sesi Tutorial:</span>
-        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-          ${[1, 2, 3, 4, 5, 6, 7, 8].map(s => `
-            <button onclick="switchTutorSesiFilter(${s})" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 ${sesiFilter === s ? 'bg-[#003367] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-              <span>Sesi ${s}</span>
-            </button>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- Pemantik Card -->
-      <div class="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-[20px] text-amber-600">lightbulb</span>
-          <span class="text-xs font-extrabold text-amber-950 uppercase tracking-wide">Pertanyaan Pemantik Tutor (Sesi ${sesiFilter}):</span>
-        </div>
-        <div class="space-y-2">
-          ${(currentTut.pemantik || []).map((p, idx) => `
-            <div class="flex items-start gap-2.5 text-xs sm:text-sm font-semibold text-slate-800">
-              <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${idx + 1}</span>
-              <p class="leading-relaxed">${p}</p>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-
-      <!-- Discussion Stream -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Tanggapan Masuk dari Mahasiswa Kelas ${classId} (${existingComments.length}):
-          </h4>
-        </div>
-
-        ${existingComments.length === 0 ? `
-          <div class="p-8 rounded-2xl border border-dashed border-slate-300 text-center space-y-2">
-            <span class="material-symbols-outlined text-[32px] text-slate-400">forum</span>
-            <p class="text-xs text-slate-500 font-medium">Belum ada respons mahasiswa yang diposting untuk Sesi ${sesiFilter}.</p>
-          </div>
-        ` : `
-          <div class="space-y-2.5">
-            ${existingComments.map(c => `
-              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#003367] font-extrabold text-xs flex items-center justify-center flex-shrink-0">
-                  ${c.nama.charAt(0)}
-                </div>
-                <div class="flex-1 space-y-1">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold text-slate-900">${c.nama}</span>
-                    <span class="text-[10px] text-slate-400">${c.waktu}</span>
-                  </div>
-                  <p class="text-xs text-slate-700 leading-relaxed">${c.teks}</p>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        `}
-      </div>
-    </div>
-  `;
-}
-
-// ----------------------------------------------------------------------------
-// TAB 4: PEMBAGIAN KELOMPOK BELAJAR KELAS
-// ----------------------------------------------------------------------------
-function renderTutorKelompokTab(classId, course) {
-  const groups = GROUPS_BY_CLASS[classId] || [];
-
-  return `
-    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
-        <div>
-          <h2 class="text-base sm:text-lg font-extrabold text-slate-900">
-            Daftar Pembagian Kelompok Belajar: Kelas ${classId}
-          </h2>
-          <p class="text-xs text-slate-500 font-medium">${course.kode} - ${course.nama}</p>
-        </div>
-        <span class="text-xs font-bold text-[#004990] bg-blue-50 px-3 py-1 rounded-xl border border-blue-100">
-          ${groups.length} Kelompok Terdaftar
-        </span>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        ${groups.map(g => `
-          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold text-[#003367] flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[18px] text-[#004990]">group</span>
-                <span>${g.nama}</span>
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900">
-                ${g.anggota.length} Anggota
-              </span>
-            </div>
-
-            <ul class="space-y-1.5 text-xs text-slate-700">
-              ${g.anggota.map((m, idx) => `
-                <li class="flex items-center gap-2 p-1.5 rounded-lg bg-white border border-slate-100 font-medium">
-                  <span class="w-4 h-4 rounded-full bg-slate-100 text-slate-600 text-[10px] flex items-center justify-center font-bold flex-shrink-0">${idx + 1}</span>
-                  <span class="truncate">${m}</span>
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-        `).join('')}
       </div>
     </div>
   `;
