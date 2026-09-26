@@ -265,20 +265,30 @@ function handleLogin(e) {
 window.openLoginModal = function(targetClassId) {
   const modal = document.getElementById('login-modal');
   const badge = document.getElementById('modal-target-class-badge');
+  const title = document.getElementById('modal-login-title');
+  const desc = document.getElementById('modal-login-desc');
   const errorBox = document.getElementById('modal-login-error');
 
   if (errorBox) errorBox.classList.add('hidden');
 
   if (targetClassId && COURSES_DATA[targetClassId]) {
     const c = COURSES_DATA[targetClassId];
-    if (badge) badge.innerText = `Membuka: Kelas ${c.id} - ${c.kode}`;
+    if (badge) badge.innerText = `Login Mahasiswa: Kelas ${c.id} (${c.kode})`;
+    if (title) title.innerText = `Login Mahasiswa Kelas ${c.id}`;
+    if (desc) desc.innerHTML = `Silakan masuk dengan <strong>Email Kampus</strong> dan <strong>NIM</strong> Anda untuk mengakses tutorial <strong>Kelas ${c.id} (${c.nama})</strong>.`;
   } else {
     if (badge) badge.innerText = 'E-LEARNING UT 2026.2 • Bagoes Panca Wiratama, S.Pd., M.Pd.';
+    if (title) title.innerText = 'Login Mahasiswa';
+    if (desc) desc.innerHTML = 'Silakan masukkan <strong>Email Kampus</strong> (Username) dan <strong>NIM</strong> (Password) untuk membuka akses tutorial.';
   }
 
   if (modal) {
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      const uField = document.getElementById('modal-login-username');
+      if (uField) uField.focus();
+    }, 100);
   }
 };
 
@@ -448,6 +458,20 @@ window.quickLoginTutor = function() {
     openLoginModal();
     switchLoginRole('tutor');
   }
+};
+
+window.handleNavClassClick = function(classId) {
+  const user = state.currentUser;
+  // If user is already logged in as a verified student of THIS specific class:
+  if (user && user.role === 'mahasiswa' && user.kelas === classId) {
+    navigateTo('dashboard', { classId: classId });
+    return;
+  }
+  
+  // For anyone else (not logged in, tutor, or different class):
+  // JANGAN TAMPILKAN ISINYA! Langsung arahkan ke login modal mahasiswa!
+  openLoginModal(classId);
+  switchLoginRole('mahasiswa');
 };
 
 window.saveInlineGrade = function(nim, type, sesi) {
@@ -756,16 +780,22 @@ function renderNavbar() {
         <button onclick="navigateTo('home')" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'home' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
           Beranda
         </button>
-        <button onclick="navigateTo('dashboard', {classId: '5A'})" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '5A' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
+        ${isLogged && user.role === 'tutor' ? `
+          <button onclick="navigateTo('tutor-view')" class="px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 ${state.view === 'tutor-view' ? 'text-amber-950 bg-amber-400 font-black shadow-xs' : 'text-amber-800 bg-amber-50 hover:bg-amber-100 font-extrabold border border-amber-200'}">
+            <span class="material-symbols-outlined text-[17px]">school</span>
+            <span>Dasbor Penilaian Tutor</span>
+          </button>
+        ` : ''}
+        <button onclick="handleNavClassClick('5A')" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '5A' && isLogged && user.role === 'mahasiswa' && user.kelas === '5A' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
           Kelas 5A
         </button>
-        <button onclick="navigateTo('dashboard', {classId: '6A'})" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '6A' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
+        <button onclick="handleNavClassClick('6A')" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '6A' && isLogged && user.role === 'mahasiswa' && user.kelas === '6A' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
           Kelas 6A
         </button>
-        <button onclick="navigateTo('dashboard', {classId: '7C1'})" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '7C1' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
+        <button onclick="handleNavClassClick('7C1')" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '7C1' && isLogged && user.role === 'mahasiswa' && user.kelas === '7C1' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
           Kelas 7C1
         </button>
-        <button onclick="navigateTo('dashboard', {classId: '7D1'})" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '7D1' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
+        <button onclick="handleNavClassClick('7D1')" class="px-3 py-2 rounded-xl hover:text-[#004990] hover:bg-blue-50/70 transition ${state.view === 'dashboard' && state.currentClassId === '7D1' && isLogged && user.role === 'mahasiswa' && user.kelas === '7D1' ? 'text-[#004990] bg-blue-50 font-extrabold' : ''}">
           Kelas 7D1
         </button>
       </div>
@@ -858,7 +888,7 @@ function renderDrawer() {
 
         <div class="pt-2 px-2 py-1 text-[11px] uppercase tracking-wider text-slate-400 font-bold">Pilih Kelas & Mata Kuliah</div>
 
-        <button onclick="closeDrawer(); navigateTo('dashboard', {classId: '5A'})" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition ${state.view === 'dashboard' && state.currentClassId === '5A' ? 'text-[#003367] bg-blue-50 font-bold' : 'text-slate-700 hover:bg-slate-100'}">
+        <button onclick="closeDrawer(); handleNavClassClick('5A')" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition text-slate-700 hover:bg-slate-100">
           <div class="flex items-center gap-3 min-w-0">
             <span class="material-symbols-outlined text-blue-600 text-[20px]">psychology</span>
             <span class="truncate">Kelas 5A - SPGK4410</span>
@@ -866,7 +896,7 @@ function renderDrawer() {
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">29 Mhs</span>
         </button>
 
-        <button onclick="closeDrawer(); navigateTo('dashboard', {classId: '6A'})" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition ${state.view === 'dashboard' && state.currentClassId === '6A' ? 'text-[#003367] bg-blue-50 font-bold' : 'text-slate-700 hover:bg-slate-100'}">
+        <button onclick="closeDrawer(); handleNavClassClick('6A')" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition text-slate-700 hover:bg-slate-100">
           <div class="flex items-center gap-3 min-w-0">
             <span class="material-symbols-outlined text-indigo-600 text-[20px]">diversity_1</span>
             <span class="truncate">Kelas 6A - SPDA4401</span>
@@ -874,7 +904,7 @@ function renderDrawer() {
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">19 Mhs</span>
         </button>
 
-        <button onclick="closeDrawer(); navigateTo('dashboard', {classId: '7C1'})" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition ${state.view === 'dashboard' && state.currentClassId === '7C1' ? 'text-[#003367] bg-blue-50 font-bold' : 'text-slate-700 hover:bg-slate-100'}">
+        <button onclick="closeDrawer(); handleNavClassClick('7C1')" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition text-slate-700 hover:bg-slate-100">
           <div class="flex items-center gap-3 min-w-0">
             <span class="material-symbols-outlined text-sky-600 text-[20px]">co_present</span>
             <span class="truncate">Kelas 7C1 - SPGK4408</span>
@@ -882,7 +912,7 @@ function renderDrawer() {
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">15 Mhs</span>
         </button>
 
-        <button onclick="closeDrawer(); navigateTo('dashboard', {classId: '7D1'})" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition ${state.view === 'dashboard' && state.currentClassId === '7D1' ? 'text-[#003367] bg-blue-50 font-bold' : 'text-slate-700 hover:bg-slate-100'}">
+        <button onclick="closeDrawer(); handleNavClassClick('7D1')" class="w-full flex items-center justify-between px-3 h-11 rounded-xl text-left font-semibold text-sm transition text-slate-700 hover:bg-slate-100">
           <div class="flex items-center gap-3 min-w-0">
             <span class="material-symbols-outlined text-emerald-600 text-[20px]">history_edu</span>
             <span class="truncate">Kelas 7D1 - SPGK4408</span>
@@ -1288,11 +1318,67 @@ function renderDashboardView() {
   const isStudent = user && user.role === 'mahasiswa';
   const isTutor = user && user.role === 'tutor';
 
-  // Check access permissions:
-  // Must be logged in as student of THIS class OR as Tutor
-  const isUnlocked = isTutor || (isStudent && user.kelas === course.id);
-  const isWrongClass = isStudent && user.kelas !== course.id;
+  // If Tutor arrives here, direct to Tutor View!
+  if (isTutor) {
+    state.currentClassId = course.id;
+    return renderTutorManagementView();
+  }
 
+  // If NOT logged in: Lock view completely! Jangan tampilkan isinya!
+  if (!user) {
+    return `
+      <div class="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white border border-slate-200 shadow-xl text-center space-y-5">
+        <div class="w-16 h-16 rounded-3xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-xs">
+          <span class="material-symbols-outlined text-[36px]">lock</span>
+        </div>
+        <div class="space-y-1.5">
+          <span class="text-xs font-bold text-[#004990] uppercase tracking-wider">Akses Terkunci</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Login Mahasiswa Kelas ${course.id}</h2>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Materi dan rangkaian 8 tutorial mata kuliah <strong>${course.nama} (${course.kode})</strong> pada Kelas ${course.id} bersifat tertutup dan <strong>wajib login mahasiswa</strong> resmi.
+          </p>
+        </div>
+        <div class="pt-2 flex flex-col gap-2.5">
+          <button onclick="openLoginModal('${course.id}')" class="w-full h-11 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md active:scale-95 transition">
+            <span class="material-symbols-outlined text-[18px] text-[#F7B500]">lock_open</span>
+            <span>Masuk / Login Mahasiswa Kelas ${course.id}</span>
+          </button>
+          <button onclick="navigateTo('home')" class="w-full h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // If student of another class:
+  if (isStudent && user.kelas !== course.id) {
+    return `
+      <div class="max-w-md mx-auto my-12 p-8 rounded-3xl bg-white border border-slate-200 shadow-xl text-center space-y-5">
+        <div class="w-16 h-16 rounded-3xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-xs">
+          <span class="material-symbols-outlined text-[36px]">block</span>
+        </div>
+        <div class="space-y-1.5">
+          <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Akses Dibatasi</span>
+          <h2 class="text-xl font-extrabold text-slate-900">Bukan Rombel Terdaftar Anda</h2>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Hai <strong>${user.nama}</strong> (NIM: ${user.nim}), data akademik menunjukkan Anda terdaftar pada <strong>Kelas ${user.kelas}</strong>. Anda tidak dapat melihat materi Tutorial Kelas ${course.id}.
+          </p>
+        </div>
+        <div class="pt-2 flex flex-col gap-2.5">
+          <button onclick="navigateTo('dashboard', {classId: '${user.kelas}'})" class="w-full h-11 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md active:scale-95 transition">
+            <span>Buka Kelas Saya (${user.kelas})</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+          <button onclick="navigateTo('home')" class="w-full h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Only reached when user is verified student of this class!
   return `
     <div class="flex flex-col space-y-6 pb-20">
       
@@ -1305,10 +1391,10 @@ function renderDashboardView() {
 
         <!-- Switch Class Pill Selector -->
         <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
-          <button onclick="navigateTo('dashboard', {classId: '5A'})" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '5A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">5A</button>
-          <button onclick="navigateTo('dashboard', {classId: '6A'})" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '6A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">6A</button>
-          <button onclick="navigateTo('dashboard', {classId: '7C1'})" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '7C1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">7C1</button>
-          <button onclick="navigateTo('dashboard', {classId: '7D1'})" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '7D1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">7D1</button>
+          <button onclick="handleNavClassClick('5A')" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '5A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">5A</button>
+          <button onclick="handleNavClassClick('6A')" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '6A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">6A</button>
+          <button onclick="handleNavClassClick('7C1')" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '7C1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">7C1</button>
+          <button onclick="handleNavClassClick('7D1')" class="px-2.5 py-1 rounded-lg ${state.currentClassId === '7D1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">7D1</button>
         </div>
       </div>
 
@@ -1347,40 +1433,16 @@ function renderDashboardView() {
           </div>
         </div>
 
-        <!-- Student Identification Chip if Logged in -->
+        <!-- Student Identification Chip -->
         <div class="w-full md:w-auto bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col space-y-2 min-w-[240px]">
           <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Status Akses Mahasiswa</span>
-          ${isStudent ? `
-            <div class="flex flex-col">
-              <span class="text-sm font-extrabold text-slate-900">${user.nama}</span>
-              <span class="text-xs font-semibold text-[#004990]">NIM: ${user.nim}</span>
-              ${user.kelas === course.id ? `
-                <span class="text-[11px] text-emerald-700 font-extrabold mt-1 flex items-center gap-1">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Terverifikasi Kelas ${user.kelas} (Terbuka)
-                </span>
-              ` : `
-                <span class="text-[11px] text-rose-700 font-bold mt-1 flex items-center gap-1">
-                  <span class="w-2 h-2 rounded-full bg-rose-500"></span> Terdaftar di Kelas ${user.kelas} (Akses Dibatasi)
-                </span>
-              `}
-            </div>
-          ` : isTutor ? `
-            <div class="flex flex-col">
-              <span class="text-sm font-extrabold text-[#003367]">${user.nama}</span>
-              <span class="text-xs font-bold text-amber-700">Tutor Pengampu (Akses Penuh)</span>
-            </div>
-          ` : `
-            <div class="flex flex-col space-y-2">
-              <div class="flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                <span class="material-symbols-outlined text-[16px] text-amber-600">lock</span>
-                <span>Belum Login (Akses Terkunci)</span>
-              </div>
-              <button onclick="openLoginModal('${course.id}')" class="h-8 px-3 rounded-lg bg-[#003367] hover:bg-[#004990] text-white text-xs font-bold flex items-center justify-center gap-1 shadow-xs transition">
-                <span class="material-symbols-outlined text-[15px] text-[#F7B500]">lock_open</span>
-                <span>Login Mahasiswa</span>
-              </button>
-            </div>
-          `}
+          <div class="flex flex-col">
+            <span class="text-sm font-extrabold text-slate-900">${user.nama}</span>
+            <span class="text-xs font-semibold text-[#004990]">NIM: ${user.nim}</span>
+            <span class="text-[11px] text-emerald-700 font-extrabold mt-1 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Terverifikasi Kelas ${user.kelas} (Terbuka)
+            </span>
+          </div>
         </div>
       </section>
 
@@ -1390,22 +1452,13 @@ function renderDashboardView() {
           <div>
             <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
               <span>Rangkaian 8x Pertemuan Tutorial</span>
-              ${!isUnlocked ? `
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
-                  <span class="material-symbols-outlined text-[13px] text-amber-600">lock</span>
-                  TERKUNCI
-                </span>
-              ` : `
-                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  <span class="material-symbols-outlined text-[13px] text-emerald-600">lock_open</span>
-                  TERBUKA
-                </span>
-              `}
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                <span class="material-symbols-outlined text-[13px] text-emerald-600">lock_open</span>
+                TERBUKA
+              </span>
             </h2>
             <p class="text-xs text-slate-500 font-medium">
-              ${!isUnlocked 
-                ? 'Sesi tutorial dan menu pembelajaran tidak dapat dilihat jika belum login mahasiswa.'
-                : 'Setiap pertemuan dilengkapi dengan 8 menu terstruktur sesuai standar pembelajaran UT.'}
+              Setiap pertemuan dilengkapi dengan 8 menu terstruktur sesuai standar pembelajaran UT.
             </p>
           </div>
           <span class="text-xs font-bold text-[#004990] bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200 self-start sm:self-auto">
@@ -1413,50 +1466,8 @@ function renderDashboardView() {
           </span>
         </div>
 
-        ${!user ? `
-          <!-- Locked Banner if Not Logged In -->
-          <div class="rounded-2xl bg-amber-50/90 border-2 border-amber-300 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center gap-3.5 text-center sm:text-left">
-              <div class="w-12 h-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center flex-shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[28px]">lock</span>
-              </div>
-              <div>
-                <h3 class="text-sm sm:text-base font-extrabold text-amber-950">Akses Tutorial Terkunci: Wajib Login Mahasiswa</h3>
-                <p class="text-xs text-amber-900 mt-0.5 leading-relaxed">
-                  Rangkaian 8 sesi tutorial, pembagian kelompok, materi, video, LKPD, kuis, dan refleksi <strong>tidak dapat dilihat</strong> jika belum login. Silakan login terlebih dahulu menggunakan Email Kampus dan NIM Anda.
-                </p>
-              </div>
-            </div>
-            <button onclick="openLoginModal('${course.id}')" class="h-11 px-5 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md active:scale-95 transition flex-shrink-0 w-full sm:w-auto">
-              <span class="material-symbols-outlined text-[18px] text-[#F7B500]">lock_open</span>
-              <span>Login Mahasiswa Sekarang</span>
-            </button>
-          </div>
-        ` : ''}
-
-        ${isWrongClass ? `
-          <!-- Wrong Class Access Denied Banner -->
-          <div class="rounded-2xl bg-rose-50 border-2 border-rose-300 p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-            <div class="flex items-center gap-3.5 text-center sm:text-left">
-              <div class="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[28px]">block</span>
-              </div>
-              <div>
-                <h3 class="text-sm sm:text-base font-extrabold text-rose-950">Akses Dibatasi: Anda Terdaftar di Kelas ${user.kelas}</h3>
-                <p class="text-xs text-rose-800 mt-0.5 leading-relaxed">
-                  Hai <strong>${user.nama}</strong> (NIM: ${user.nim}), data resmi menunjukkan Anda terdaftar pada <strong>Kelas ${user.kelas}</strong>. Anda tidak dapat melihat materi tutorial Kelas ${course.id}.
-                </p>
-              </div>
-            </div>
-            <button onclick="navigateTo('dashboard', {classId: '${user.kelas}'})" class="h-11 px-5 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md active:scale-95 transition flex-shrink-0 w-full sm:w-auto">
-              <span>Buka Kelas Saya (${user.kelas})</span>
-              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
-          </div>
-        ` : ''}
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${tutorials.map(tut => renderTutorialCard(tut, course, isUnlocked)).join('')}
+          ${tutorials.map(tut => renderTutorialCard(tut, course, true)).join('')}
         </div>
       </section>
 
