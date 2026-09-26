@@ -1,18 +1,18 @@
-// Data Lengkap E-Learning UT Pokjar Nusa Indah
-// Auto-generated for Tutor: Bagus Panca Wiratama, S.Pd., M.Pd.
+// Data Lengkap E-Learning UT 2026.2
+// Auto-generated for Tutor: Bagoes Panca Wiratama, S.Pd., M.Pd.
 // Terdiri dari: 78 Mahasiswa resmi, 4 Kelas & Mata Kuliah, 8x Tutorial per kelas, dan 8 Menu per pertemuan.
 
 var TUTOR_DATA = {
-  nama: "Bagus Panca Wiratama, S.Pd., M.Pd.",
+  nama: "Bagoes Panca Wiratama, S.Pd., M.Pd.",
   gelar: "S.Pd., M.Pd.",
   nip: "198805122019031008",
   email: "bagoespancawiratama@gmail.com",
-  whatsapp: "+62 856-6920-9950",
-  upbjj: "UPBJJ UT Palembang",
-  pokjar: "Pokjar Nusa Indah, Kab. OKU Timur",
-  status: "Tutor Pengampu & Pengelola Sentra Belajar",
+  whatsapp: "+62 857-5815-6726",
+  upbjj: "Universitas Terbuka",
+  pokjar: "E-Learning UT 2026.2",
+  status: "Tutor Pengampu Perkuliahan Semester 2026.2",
   foto: "Bagus Panca Wiratama.jpg",
-  sambutan: "Selamat datang di Portal E-Learning UT Pokjar Nusa Indah. Portal ini dirancang untuk mendampingi rekan-rekan mahasiswa dalam menjalani perkuliahan jarak jauh yang mandiri, bermakna, dan berkualitas. Mari optimalkan seluruh menu tutorial 1 hingga 8 untuk meraih prestasi akademik terbaik."
+  sambutan: "Selamat datang di Portal E-LEARNING UT 2026.2. Portal ini dirancang untuk mendampingi rekan-rekan mahasiswa dalam menjalani perkuliahan jarak jauh yang mandiri, bermakna, dan berkualitas. Mari optimalkan seluruh menu tutorial 1 hingga 8 untuk meraih prestasi akademik terbaik bersama Tutor Bagoes Panca Wiratama, S.Pd., M.Pd."
 };
 
 var COURSES_DATA = {
@@ -23,7 +23,7 @@ var COURSES_DATA = {
     "sks": 4,
     "semester": "Semester 5",
     "prodi": "S1 Pendidikan Guru Sekolah Dasar (PGSD)",
-    "tutor": "Bagus Panca Wiratama, S.Pd., M.Pd.",
+    "tutor": "Bagoes Panca Wiratama, S.Pd., M.Pd.",
     "deskripsi": "Mata kuliah ini membekali mahasiswa dengan wawasan dan keterampilan merancang, mengimplementasikan, dan mengevaluasi strategi pembelajaran abad 21 di SD yang berpusat pada peserta didik, berbasis diferensiasi, dan mengintegrasikan TPACK.",
     "color": "#004990",
     "badge_color": "bg-blue-600",
@@ -36,7 +36,7 @@ var COURSES_DATA = {
     "sks": 3,
     "semester": "Semester 6",
     "prodi": "S1 Pendidikan Guru Sekolah Dasar (PGSD)",
-    "tutor": "Bagus Panca Wiratama, S.Pd., M.Pd.",
+    "tutor": "Bagoes Panca Wiratama, S.Pd., M.Pd.",
     "deskripsi": "Mata kuliah ini membahas landasan filosofis, yuridis, klasifikasi, identifikasi, asesmen, serta strategi adaptasi kurikulum dan pembelajaran inklusif bagi peserta didik berkebutuhan khusus di sekolah dasar.",
     "color": "#003367",
     "badge_color": "bg-indigo-600",
@@ -49,7 +49,7 @@ var COURSES_DATA = {
     "sks": 4,
     "semester": "Semester 7 (Kelas C1)",
     "prodi": "S1 Pendidikan Guru Sekolah Dasar (PGSD)",
-    "tutor": "Bagus Panca Wiratama, S.Pd., M.Pd.",
+    "tutor": "Bagoes Panca Wiratama, S.Pd., M.Pd.",
     "deskripsi": "Mata kuliah praktik mandiri dan terbimbing untuk melatih, memantapkan, dan menilai kemampuan mahasiswa dalam merancang, melaksanakan, dan merefleksi proses pembelajaran nyata di sekolah dasar sesuai standar kompetensi guru profesional.",
     "color": "#004990",
     "badge_color": "bg-sky-600",
@@ -62,7 +62,7 @@ var COURSES_DATA = {
     "sks": 4,
     "semester": "Semester 7 (Kelas D1)",
     "prodi": "S1 Pendidikan Guru Sekolah Dasar (PGSD)",
-    "tutor": "Bagus Panca Wiratama, S.Pd., M.Pd.",
+    "tutor": "Bagoes Panca Wiratama, S.Pd., M.Pd.",
     "deskripsi": "Mata kuliah praktik mandiri dan terbimbing untuk melatih, memantapkan, dan menilai kemampuan mahasiswa dalam merancang, melaksanakan, dan merefleksi proses pembelajaran nyata di sekolah dasar sesuai standar kompetensi guru profesional.",
     "color": "#003367",
     "badge_color": "bg-emerald-600",
@@ -1290,7 +1290,7 @@ var TUTORIALS_DATA = {
       "waktu": "08:00 - 10:00 WIB",
       "mode": "Tuweb & Tatap Muka (TTM)",
       "cpmk": "Mahasiswa mampu menganalisis karakteristik pembelajaran abad 21 (4C: Critical Thinking, Creativity, Collaboration, Communication) serta menghubungkannya dengan profil peserta didik SD masa kini.",
-      "topik_kelompok": "Analisis Kebutuhan Belajar Siswa Generasi Alpha di Sekolah Dasar OKU Timur",
+      "topik_kelompok": "Analisis Kebutuhan Belajar Siswa Generasi Alpha di Sekolah Dasar",
       "pemantik": [
         "Bagaimana karakteristik belajar generasi Alpha di SD berbeda secara mendasar dibandingkan generasi sebelumnya?",
         "Strategi konkrit apa yang paling efektif untuk menumbuhkan keterampilan 4C sejak fase kelas rendah (Kelas 1-3)?"
@@ -1396,7 +1396,7 @@ var TUTORIALS_DATA = {
       "waktu": "08:00 - 10:00 WIB",
       "mode": "Tuweb & Tatap Muka (TTM)",
       "cpmk": "Mahasiswa mampu menyusun modul ajar dengan sintaks PBL dan PjBL serta mengunggah penyelesaian Tugas Tutorial 1.",
-      "topik_kelompok": "Perancangan Proyek Penguatan Karakter dan Lingkungan Hidup Berbasis PjBL di OKU Timur",
+      "topik_kelompok": "Perancangan Proyek Penguatan Karakter dan Lingkungan Hidup Berbasis PjBL di Sekolah Dasar",
       "pemantik": [
         "Apa perbedaan mendasar antara hasil akhir (outcome) dari sintaks PBL versus PjBL di sekolah dasar?",
         "Bagaimana cara mengelola alokasi waktu proyek PjBL agar tidak membebani jam mata pelajaran lain di SD?"
@@ -1407,7 +1407,7 @@ var TUTORIALS_DATA = {
       "video_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
       "video_desc": "Dokumentasi guru memfasilitasi investigasi siswa SD dalam memecahkan masalah pencemaran lingkungan sekitar sekolah.",
       "lkpd_title": "LKPD 3: Rancang Bangun Sintaks PBL untuk Mata Pelajaran IPAS di SD",
-      "lkpd_desc": "Susun lembar kerja berbasis masalah nyata lokal (misal: pertanian/irigasi di OKU Timur) dengan sintaks PBL lengkap.",
+      "lkpd_desc": "Susun lembar kerja berbasis masalah nyata kontekstual siswa SD dengan sintaks PBL lengkap.",
       "tugas_khusus": "TUGAS TUTORIAL 1 (Wajib Diunggah: Batas Akhir Sesi 3)",
       "quiz": [
         {
@@ -1661,7 +1661,7 @@ var TUTORIALS_DATA = {
       "waktu": "08:00 - 10:00 WIB",
       "mode": "Tuweb & Tatap Muka (TTM)",
       "cpmk": "Mahasiswa mampu merangkum seluruh materi tutorial 1-8, mengevaluasi portofolio tugas, dan merumuskan rencana aksi inovasi pembelajaran berkelanjutan di SD masing-masing.",
-      "topik_kelompok": "Gelar Portofolio Inovasi Pembelajaran Kelas 5A Pokjar Nusa Indah",
+      "topik_kelompok": "Gelar Portofolio Inovasi Pembelajaran Kelas 5A",
       "pemantik": [
         "Inovasi strategi pembelajaran mana yang paling berdampak langsung saat Anda uji coba di kelas nyata?",
         "Bagaimana komitmen Anda menjaga keberlanjutan profesionalisme sebagai pendidik lulusan Universitas Terbuka?"
@@ -2460,7 +2460,7 @@ var TUTORIALS_DATA = {
       "waktu": "13:00 - 15:00 WIB",
       "mode": "Tuweb & Tatap Muka (TTM)",
       "cpmk": "Mahasiswa mampu menguasai kompetensi pedagogik dan profesional melalui praktik ujian mengajar mandiri di sekolah latihan & sistematika laporan pkm sebagai calon sarjana pendidikan guru sekolah dasar.",
-      "topik_kelompok": "Praktik Kolaboratif Kelompok: Penyusunan Bab I-IV Laporan Praktik PKM Pokjar Nusa Indah",
+      "topik_kelompok": "Praktik Kolaboratif Kelompok: Penyusunan Bab I-IV Laporan Praktik PKM Mahasiswa UT",
       "pemantik": [
         "Bagaimana memastikan bahwa keterampilan membuka pelajaran mampu mengaktifkan skemata dan fokus seluruh siswa SD?",
         "Apa saja kriteria penting dalam lembar refleksi diri agar guru benar-benar menyadari aspek pengajaran yang harus diperbaiki?"
@@ -2886,7 +2886,7 @@ var TUTORIALS_DATA = {
       "waktu": "15:15 - 17:15 WIB",
       "mode": "Tuweb & Tatap Muka (TTM)",
       "cpmk": "Mahasiswa mampu menguasai kompetensi pedagogik dan profesional melalui praktik ujian mengajar mandiri di sekolah latihan & sistematika laporan pkm sebagai calon sarjana pendidikan guru sekolah dasar.",
-      "topik_kelompok": "Praktik Kolaboratif Kelompok: Penyusunan Bab I-IV Laporan Praktik PKM Pokjar Nusa Indah",
+      "topik_kelompok": "Praktik Kolaboratif Kelompok: Penyusunan Bab I-IV Laporan Praktik PKM Mahasiswa UT",
       "pemantik": [
         "Bagaimana memastikan bahwa keterampilan membuka pelajaran mampu mengaktifkan skemata dan fokus seluruh siswa SD?",
         "Apa saja kriteria penting dalam lembar refleksi diri agar guru benar-benar menyadari aspek pengajaran yang harus diperbaiki?"

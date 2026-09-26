@@ -523,21 +523,21 @@ curricula['7C1'] = create_pkm_curricula('7C1')
 curricula['7D1'] = create_pkm_curricula('7D1')
 
 # Build the complete JS structure
-js_code = f"""// Data Lengkap E-Learning UT Pokjar Nusa Indah
-// Auto-generated for Tutor: Bagus Panca Wiratama, S.Pd., M.Pd.
+js_code = f"""// Data Lengkap E-Learning UT 2026.2
+// Auto-generated for Tutor: Bagoes Panca Wiratama, S.Pd., M.Pd.
 // Terdiri dari: 78 Mahasiswa resmi, 4 Kelas & Mata Kuliah, 8x Tutorial per kelas, dan 8 Menu per pertemuan.
 
 var TUTOR_DATA = {{
-  nama: "Bagus Panca Wiratama, S.Pd., M.Pd.",
+  nama: "Bagoes Panca Wiratama, S.Pd., M.Pd.",
   gelar: "S.Pd., M.Pd.",
   nip: "198805122019031008",
   email: "bagoespancawiratama@gmail.com",
-  whatsapp: "+62 856-6920-9950",
-  upbjj: "UPBJJ UT Palembang",
-  pokjar: "Pokjar Nusa Indah, Kab. OKU Timur",
-  status: "Tutor Pengampu & Pengelola Sentra Belajar",
+  whatsapp: "+62 857-5815-6726",
+  upbjj: "Universitas Terbuka",
+  pokjar: "E-Learning UT 2026.2",
+  status: "Tutor Pengampu Perkuliahan Semester 2026.2",
   foto: "Bagus Panca Wiratama.jpg",
-  sambutan: "Selamat datang di Portal E-Learning UT Pokjar Nusa Indah. Portal ini dirancang untuk mendampingi rekan-rekan mahasiswa dalam menjalani perkuliahan jarak jauh yang mandiri, bermakna, dan berkualitas. Mari optimalkan seluruh menu tutorial 1 hingga 8 untuk meraih prestasi akademik terbaik."
+  sambutan: "Selamat datang di Portal E-LEARNING UT 2026.2. Portal ini dirancang untuk mendampingi rekan-rekan mahasiswa dalam menjalani perkuliahan jarak jauh yang mandiri, bermakna, dan berkualitas. Mari optimalkan seluruh menu tutorial 1 hingga 8 untuk meraih prestasi akademik terbaik bersama Tutor Bagoes Panca Wiratama, S.Pd., M.Pd."
 }};
 
 var COURSES_DATA = {json.dumps(courses_info, indent=2, ensure_ascii=False)};

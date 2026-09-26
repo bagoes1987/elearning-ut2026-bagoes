@@ -1,6 +1,6 @@
 // ============================================================================
-// E-LEARNING UT POKJAR NUSA INDAH - APLIKASI WEB UTAMA
-// Tutor Pengampu: Bagus Panca Wiratama, S.Pd., M.Pd.
+// E-LEARNING UT 2026.2 - APLIKASI WEB UTAMA
+// Tutor Pengampu: Bagoes Panca Wiratama, S.Pd., M.Pd.
 // ============================================================================
 
 // Global Application State
@@ -286,7 +286,7 @@ window.openLoginModal = function(targetClassId) {
     const c = COURSES_DATA[targetClassId];
     if (badge) badge.innerText = `Membuka: Kelas ${c.id} - ${c.kode}`;
   } else {
-    if (badge) badge.innerText = 'Pokjar Nusa Indah • UPBJJ UT Palembang';
+    if (badge) badge.innerText = 'E-LEARNING UT 2026.2 • Bagoes Panca Wiratama, S.Pd., M.Pd.';
   }
 
   if (modal) {
@@ -374,7 +374,7 @@ window.exportGradebookCSV = function(classId) {
   const students = STUDENTS_DATA.filter(s => s.kelas === classId);
   const course = COURSES_DATA[classId] || COURSES_DATA['5A'];
   let csv = `REKAPITULASI NILAI AKADEMIK TUTORIAL UNIVERSITAS TERBUKA\n`;
-  csv += `Sentra Layanan Pokjar Nusa Indah - UPBJJ UT Palembang\n`;
+  csv += `Portal E-LEARNING UT 2026.2\n`;
   csv += `Mata Kuliah: ${course.nama} (${course.kode})\n`;
   csv += `Tutor Pengampu: ${TUTOR_DATA.nama}\n`;
   csv += `Kelas: ${classId}\n\n`;
@@ -552,15 +552,15 @@ function renderApp() {
 
   // Update document title
   if (state.view === 'home') {
-    document.title = 'e-learningut2026.2 | Portal Resmi UT Pokjar Nusa Indah';
+    document.title = 'E-LEARNING UT 2026.2 | Bagoes Panca Wiratama, S.Pd., M.Pd.';
   } else if (state.view === 'dashboard') {
     const course = getCurrentCourse();
-    document.title = `e-learningut2026.2 | ${course.kode} (${course.id}) - Dashboard Kelas`;
+    document.title = `E-LEARNING UT 2026.2 | ${course.kode} (${course.id}) - Dashboard Kelas`;
   } else if (state.view === 'tutorial-detail') {
     const tut = getCurrentTutorial();
-    document.title = `e-learningut2026.2 | Tutorial ${tut.sesi} - Kelas ${state.currentClassId}`;
+    document.title = `E-LEARNING UT 2026.2 | Tutorial ${tut.sesi} - Kelas ${state.currentClassId}`;
   } else if (state.view === 'tutor-view') {
-    document.title = 'e-learningut2026.2 | Panel Tutor: Bagus Panca Wiratama, S.Pd., M.Pd.';
+    document.title = 'E-LEARNING UT 2026.2 | Panel Tutor: Bagoes Panca Wiratama, S.Pd., M.Pd.';
   }
 }
 
@@ -604,8 +604,8 @@ function renderNavbar() {
           <img src="favicon.png" 
                alt="Logo UT" class="h-8 sm:h-9 w-auto object-contain flex-shrink-0 group-hover:scale-105 transition" />
           <div class="flex flex-col min-w-0">
-            <span class="text-xs sm:text-sm font-extrabold text-[#003367] tracking-tight leading-tight group-hover:text-[#004990] truncate whitespace-nowrap">e-learningut2026.2</span>
-            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 truncate whitespace-nowrap hidden xs:block sm:block">Pokjar Nusa Indah</span>
+            <span class="text-xs sm:text-sm font-extrabold text-[#003367] tracking-tight leading-tight group-hover:text-[#004990] truncate whitespace-nowrap">E-LEARNING UT 2026.2</span>
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 truncate whitespace-nowrap hidden xs:block sm:block">Bagoes Panca Wiratama, S.Pd., M.Pd.</span>
           </div>
         </a>
       </div>
@@ -682,8 +682,8 @@ function renderDrawer() {
         <div class="flex items-center gap-2.5">
           <img src="favicon.png" alt="Logo UT" class="h-8 w-auto object-contain" />
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-900 leading-tight">e-learningut2026.2</span>
-            <span class="text-[11px] font-semibold text-[#004990]">Pokjar Nusa Indah</span>
+            <span class="text-sm font-bold text-slate-900 leading-tight">E-LEARNING UT 2026.2</span>
+            <span class="text-[11px] font-semibold text-[#004990]">Bagoes Panca Wiratama, S.Pd., M.Pd.</span>
           </div>
         </div>
         <button onclick="closeDrawer()" class="w-8 h-8 flex items-center justify-center text-slate-500 rounded-lg hover:bg-slate-200 transition">
@@ -830,14 +830,14 @@ function renderHomeView() {
             </div>
 
             <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-              e-learningut2026.2 <br class="hidden sm:block"/>
+              E-LEARNING UT 2026.2 <br class="hidden sm:block"/>
               <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-white">
-                Pokjar Nusa Indah
+                Bagoes Panca Wiratama, S.Pd., M.Pd.
               </span>
             </h1>
 
             <p class="text-blue-100 text-xs sm:text-sm leading-relaxed">
-              Sentra layanan pembelajaran digital terpadu bagi mahasiswa Universitas Terbuka di wilayah Kabupaten OKU Timur. Menyediakan modul ajar, bimbingan tutorial, penugasan terstruktur, dan penilaian berkala.
+              Portal perkuliahan mandiri dan tutorial resmi Universitas Terbuka Semester 2026.2. Menyediakan modul ajar digital, bimbingan tutorial tatap muka & tuweb terstruktur, penugasan lembar kerja LKPD, ruang diskusi pemantik, dan penilaian berkala.
             </p>
 
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center md:justify-start gap-2.5 pt-2 w-full sm:w-auto">
@@ -855,7 +855,7 @@ function renderHomeView() {
             <div class="md:hidden flex flex-wrap items-center justify-center gap-2 pt-2 text-[11px] font-bold text-amber-200">
               <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">📚 4 Kelas Aktif</span>
               <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">👥 78 Mahasiswa</span>
-              <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">📍 OKU Timur</span>
+              <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">🎓 Semester 2026.2</span>
             </div>
           </div>
 
@@ -865,8 +865,8 @@ function renderHomeView() {
               <div class="w-16 h-16 rounded-2xl bg-white/20 p-2 shadow-inner flex items-center justify-center mb-3">
                 <img src="favicon.png" alt="Logo UT" class="h-full w-auto object-contain" />
               </div>
-              <span class="text-xs font-bold text-white uppercase tracking-wider">UPBJJ UT Palembang</span>
-              <span class="text-[11px] text-blue-200 mt-0.5">Sentra Layanan Pokjar Nusa Indah</span>
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Universitas Terbuka</span>
+              <span class="text-[11px] text-blue-200 mt-0.5">Masa Tutorial 2026.2</span>
               <div class="w-full h-px bg-white/20 my-3"></div>
               <div class="grid grid-cols-2 gap-2 w-full text-center">
                 <div class="bg-white/10 p-2 rounded-xl">
@@ -916,7 +916,7 @@ function renderHomeView() {
                 ${TUTOR_DATA.nama}
               </h2>
               <p class="text-xs sm:text-sm font-semibold text-slate-500 mt-0.5">
-                Dosen / Tutor Pembimbing Perkuliahan Pokjar Nusa Indah • UPBJJ UT Palembang
+                Tutor Pengampu Perkuliahan Semester 2026.2 • Universitas Terbuka
               </p>
             </div>
 
@@ -938,8 +938,8 @@ function renderHomeView() {
                 <span class="font-bold text-slate-800">Modul BMP UT</span>
               </div>
               <div class="bg-blue-50/70 p-2.5 rounded-xl border border-blue-100">
-                <span class="text-[10px] text-slate-500 block uppercase font-bold">Wilayah</span>
-                <span class="font-bold text-slate-800">Kab. OKU Timur</span>
+                <span class="text-[10px] text-slate-500 block uppercase font-bold">Masa Studi</span>
+                <span class="font-bold text-slate-800">Semester 2026.2</span>
               </div>
             </div>
           </div>
@@ -1021,22 +1021,22 @@ function renderHomeView() {
         </div>
       </section>
 
-      <!-- INFORMASI POKJAR & SENTRA BELAJAR -->
+      <!-- INFORMASI LAYANAN TUTORIAL & KONTAK -->
       <section class="rounded-3xl bg-slate-100/90 border border-slate-200 p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3.5">
           <div class="w-11 h-11 rounded-2xl bg-[#003367] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-            <span class="material-symbols-outlined text-[24px]">pin_drop</span>
+            <span class="material-symbols-outlined text-[24px]">support_agent</span>
           </div>
           <div>
-            <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Sentra Layanan UT Pokjar Nusa Indah</h3>
-            <p class="text-xs text-slate-600 mt-0.5">Kabupaten OKU Timur, Sumatera Selatan • Afiliasi UPBJJ Universitas Terbuka Palembang</p>
+            <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Layanan Tutorial E-Learning UT 2026.2</h3>
+            <p class="text-xs text-slate-600 mt-0.5">Bimbingan Akademik & Tutorial Bersama Tutor Bagoes Panca Wiratama, S.Pd., M.Pd.</p>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
-          <a href="https://wa.me/6285669209950" target="_blank" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition active:scale-95">
+          <a href="https://wa.me/6285758156726" target="_blank" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition active:scale-95">
             <span class="material-symbols-outlined text-[18px]">chat</span>
-            <span>Hubungi: +62 856-6920-9950</span>
+            <span>Hubungi: +62 857-5815-6726</span>
           </a>
         </div>
       </section>
@@ -1191,7 +1191,7 @@ function renderDashboardView() {
               ${course.nama}
             </h1>
             <p class="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-              Program Studi ${course.prodi} • Pokjar Nusa Indah
+              Program Studi ${course.prodi} • Masa Tutorial 2026.2
             </p>
           </div>
 
@@ -1876,7 +1876,7 @@ function submitComment(key) {
   }
 
   const user = state.currentUser;
-  const authorName = user ? user.nama : 'Mahasiswa Pokjar Nusa Indah';
+  const authorName = user ? user.nama : 'Mahasiswa Universitas Terbuka';
 
   if (!state.comments[key]) state.comments[key] = [];
 
@@ -2309,7 +2309,7 @@ function renderTutorManagementView() {
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wide">
                   Tutor Pengampu Resmi
                 </span>
-                <span class="text-[11px] text-blue-200 hidden sm:inline">• Pokjar Nusa Indah</span>
+                <span class="text-[11px] text-blue-200 hidden sm:inline">• E-Learning Semester 2026.2</span>
               </div>
               <h1 class="text-lg sm:text-2xl font-extrabold leading-tight">${TUTOR_DATA.nama}</h1>
               <p class="text-xs text-blue-100">
