@@ -10,13 +10,38 @@ var state = {
   currentClassId: '5A', // '5A' | '6A' | '7C1' | '7D1'
   currentSesi: 1, // 1 to 8
   currentTab: 'kelompok', // 'kelompok' | 'rat_sat' | 'pemantik' | 'materi' | 'video' | 'lkpd' | 'asesmen' | 'refleksi'
+  loginRole: 'mahasiswa', // 'mahasiswa' | 'tutor'
+  tutorTab: 'gradebook', // 'gradebook' | 'lkpd' | 'diskusi' | 'kelompok'
+  tutorSesiFilter: 1,
   phonePreview: false,
   comments: {}, // session comments stored by key `${classId}_sesi${sesi}`
   submissions: {}, // lkpd submissions
   reflections: {}, // reflections
-  quizScores: {} // quiz results
+  quizScores: {}, // quiz results
+  grades: {} // student grades by NIM: { tugas1, tugas2, tugas3, partisipasi, catatan }
 };
 if (typeof window !== 'undefined') window.state = state;
+
+// Generate Default Realistic Grades
+function generateDefaultGrades() {
+  const g = {};
+  if (typeof STUDENTS_DATA !== 'undefined') {
+    STUDENTS_DATA.forEach((s, idx) => {
+      const t1 = 80 + ((idx * 3) % 15);
+      const t2 = 82 + ((idx * 5) % 14);
+      const t3 = 85 + ((idx * 2) % 12);
+      const part = 84 + ((idx * 7) % 13);
+      g[s.nim] = {
+        tugas1: t1,
+        tugas2: t2,
+        tugas3: t3,
+        partisipasi: part,
+        catatan: 'Keaktifan dalam tutorial dan pemahaman materi modul sangat baik.'
+      };
+    });
+  }
+  return g;
+}
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
@@ -48,6 +73,13 @@ function loadLocalState() {
 
     const savedQuiz = localStorage.getItem('ut_quiz');
     if (savedQuiz) state.quizScores = JSON.parse(savedQuiz);
+
+    const savedGrades = localStorage.getItem('ut_grades');
+    if (savedGrades) {
+      state.grades = JSON.parse(savedGrades);
+    } else {
+      state.grades = generateDefaultGrades();
+    }
   } catch (e) {
     console.error('Error loading local storage state', e);
   }
@@ -67,6 +99,7 @@ function saveLocalState() {
     localStorage.setItem('ut_submissions', JSON.stringify(state.submissions));
     localStorage.setItem('ut_reflections', JSON.stringify(state.reflections));
     localStorage.setItem('ut_quiz', JSON.stringify(state.quizScores));
+    localStorage.setItem('ut_grades', JSON.stringify(state.grades));
   } catch (e) {
     console.error('Error saving local storage state', e);
   }
@@ -102,8 +135,8 @@ function authenticateStudent(identifier, password) {
 
   // Check Tutor Credentials
   if (
-    (cleanId === 'bagus.panca@ecampus.ut.ac.id' || cleanId === 'tutor' || cleanId === 'admin') &&
-    (cleanPass === 'tutor123' || cleanPass === '123456' || cleanPass === 'admin')
+    (cleanId === 'bagus.panca@ecampus.ut.ac.id' || cleanId === 'tutor' || cleanId === 'admin' || cleanId === 'bagus' || cleanId === '198710262024011001') &&
+    (cleanPass === 'tutor123' || cleanPass === '123456' || cleanPass === 'admin' || cleanPass === 'tutor' || cleanPass === 'bagus' || cleanPass === '198710262024011001')
   ) {
     return {
       role: 'tutor',
@@ -140,6 +173,57 @@ function authenticateStudent(identifier, password) {
   return null;
 }
 
+// Switch Login Role (Mahasiswa / Tutor)
+window.switchLoginRole = function(role) {
+  state.loginRole = role;
+  const tabMhs = document.getElementById('tab-login-mahasiswa');
+  const tabTut = document.getElementById('tab-login-tutor');
+  const title = document.getElementById('login-title');
+  const desc = document.getElementById('login-desc');
+  const userLabel = document.getElementById('login-user-label');
+  const userField = document.getElementById('login-username');
+  const pwLabel = document.getElementById('login-pw-label');
+  const pwField = document.getElementById('login-password');
+  const btnText = document.getElementById('login-btn-text');
+  const errBox = document.getElementById('login-error');
+
+  if (errBox) errBox.classList.add('hidden');
+
+  if (role === 'tutor') {
+    if (tabTut) tabTut.className = 'flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition bg-[#003367] text-white shadow-xs';
+    if (tabMhs) tabMhs.className = 'flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition text-slate-600 hover:text-slate-900';
+    if (title) title.innerText = 'Login Tutor Pengampu';
+    if (desc) desc.innerHTML = 'Portal khusus Tutor (<strong class="text-[#003367]">' + TUTOR_DATA.nama + '</strong>) untuk memantau aktivitas dan memberikan penilaian mahasiswa.';
+    if (userLabel) userLabel.innerText = 'Email Tutor atau NIP / Username';
+    if (userField) {
+      userField.placeholder = 'bagus.panca@ecampus.ut.ac.id';
+      userField.value = 'bagus.panca@ecampus.ut.ac.id';
+    }
+    if (pwLabel) pwLabel.innerText = 'Password Tutor';
+    if (pwField) {
+      pwField.placeholder = 'Masukkan Password Tutor (default: tutor123)';
+      pwField.value = 'tutor123';
+    }
+    if (btnText) btnText.innerText = 'Masuk ke Dasbor Penilaian Tutor';
+  } else {
+    if (tabMhs) tabMhs.className = 'flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition bg-[#003367] text-white shadow-xs';
+    if (tabTut) tabTut.className = 'flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition text-slate-600 hover:text-slate-900';
+    if (title) title.innerText = 'Login Mahasiswa';
+    if (desc) desc.innerHTML = 'Sesuai ketentuan akademik UT, gunakan <strong class="text-[#003367]">Email Kampus</strong> sebagai Username dan <strong class="text-[#003367]">NIM</strong> sebagai Password untuk mengakses kelas & materi perkuliahan.';
+    if (userLabel) userLabel.innerText = 'Username (Email Kampus atau NIM)';
+    if (userField) {
+      userField.placeholder = 'Contoh: 860080512@ecampus.ut.ac.id atau 860080512';
+      userField.value = '';
+    }
+    if (pwLabel) pwLabel.innerText = 'Password (Nomor Induk Mahasiswa / NIM)';
+    if (pwField) {
+      pwField.placeholder = 'Masukkan NIM Anda';
+      pwField.value = '';
+    }
+    if (btnText) btnText.innerText = 'Masuk ke Kelas Saya';
+  }
+};
+
 // Handle Login Submit
 function handleLogin(e) {
   if (e) e.preventDefault();
@@ -157,56 +241,27 @@ function handleLogin(e) {
     if (user.role === 'mahasiswa') {
       state.currentClassId = user.kelas;
       navigateTo('dashboard', { classId: user.kelas });
+      showToast(`Selamat datang, ${user.nama} (${user.kelas})!`, 'success');
     } else {
       navigateTo('tutor-view');
+      showToast(`Selamat datang Tutor: ${user.nama}!`, 'success');
     }
-    showToast(`Selamat datang, ${user.nama}!`, 'success');
   } else {
     if (errorBox) {
       errorBox.classList.remove('hidden');
-      errorBox.innerText = 'Username (Email) atau Password (NIM) tidak cocok. Silakan periksa kembali atau gunakan pilihan demo cepat di bawah.';
+      if (state.loginRole === 'tutor') {
+        errorBox.innerText = 'Username atau Password Tutor salah. Gunakan Email Tutor: bagus.panca@ecampus.ut.ac.id dan Password: tutor123';
+      } else {
+        errorBox.innerText = 'Username (Email Kampus) atau Password (NIM) tidak cocok. Pastikan data NIM dan Email sudah benar.';
+      }
     }
   }
-}
-
-// Quick Demo Login Handler
-function quickLogin(studentNim) {
-  const student = STUDENTS_DATA.find(s => s.nim === String(studentNim));
-  if (student) {
-    state.currentUser = {
-      role: 'mahasiswa',
-      id: student.id,
-      nama: student.nama,
-      nim: student.nim,
-      email: student.email,
-      kelas: student.kelas
-    };
-    state.currentClassId = student.kelas;
-    closeLoginModal();
-    navigateTo('dashboard', { classId: student.kelas });
-    showToast(`Login demo berhasil sebagai ${student.nama} (${student.kelas})`, 'success');
-  }
-}
-
-function quickLoginTutor() {
-  state.currentUser = {
-    role: 'tutor',
-    nama: TUTOR_DATA.nama,
-    email: TUTOR_DATA.email,
-    nip: TUTOR_DATA.nip,
-    foto: TUTOR_DATA.foto,
-    gelar: TUTOR_DATA.gelar
-  };
-  closeLoginModal();
-  navigateTo('tutor-view');
-  showToast('Masuk sebagai Tutor: Bagus Panca Wiratama, S.Pd., M.Pd.', 'success');
 }
 
 // Interactive Login Modal Handlers
 window.openLoginModal = function(targetClassId) {
   const modal = document.getElementById('login-modal');
   const badge = document.getElementById('modal-target-class-badge');
-  const select = document.getElementById('modal-quick-select');
   const errorBox = document.getElementById('modal-login-error');
 
   if (errorBox) errorBox.classList.add('hidden');
@@ -214,30 +269,8 @@ window.openLoginModal = function(targetClassId) {
   if (targetClassId && COURSES_DATA[targetClassId]) {
     const c = COURSES_DATA[targetClassId];
     if (badge) badge.innerText = `Membuka: Kelas ${c.id} - ${c.kode}`;
-    let opts = `<option value="">-- Pilih Mahasiswa Kelas ${c.id} untuk Masuk Cepat --</option>`;
-    const classStudents = STUDENTS_DATA.filter(s => s.kelas === targetClassId);
-    opts += `<optgroup label="Mahasiswa Kelas ${c.id} (${classStudents.length} Orang)">`;
-    classStudents.forEach(s => {
-      opts += `<option value="${s.nim}">${s.nama} (${s.nim})</option>`;
-    });
-    opts += `</optgroup>`;
-    opts += `<optgroup label="-- Kelas Lainnya --">`;
-    STUDENTS_DATA.filter(s => s.kelas !== targetClassId).forEach(s => {
-      opts += `<option value="${s.nim}">${s.nama} (${s.kelas} - ${s.nim})</option>`;
-    });
-    opts += `</optgroup>`;
-    if (select) select.innerHTML = opts;
   } else {
     if (badge) badge.innerText = 'Pokjar Nusa Indah • UPBJJ UT Palembang';
-    let opts = `<option value="">-- Pilih Mahasiswa untuk Login Otomatis --</option>`;
-    ['5A', '6A', '7C1', '7D1'].forEach(cid => {
-      opts += `<optgroup label="Kelas ${cid}">`;
-      STUDENTS_DATA.filter(s => s.kelas === cid).forEach(s => {
-        opts += `<option value="${s.nim}">${s.nama} (${s.nim})</option>`;
-      });
-      opts += `</optgroup>`;
-    });
-    if (select) select.innerHTML = opts;
   }
 
   if (modal) {
@@ -252,6 +285,119 @@ window.closeLoginModal = function() {
     modal.classList.add('hidden');
     document.body.style.overflow = '';
   }
+};
+
+// Tutor Grading Modal Handlers
+window.openGradeModal = function(nim) {
+  const student = STUDENTS_DATA.find(s => s.nim === String(nim));
+  if (!student) return;
+  const g = (state.grades && state.grades[nim]) || { tugas1: 80, tugas2: 80, tugas3: 80, partisipasi: 80, catatan: '' };
+
+  const modal = document.getElementById('tutor-grade-modal');
+  if (!modal) return;
+
+  const namaEl = document.getElementById('grade-student-nama');
+  const nimEl = document.getElementById('grade-student-nim');
+  const targetNimEl = document.getElementById('grade-student-target-nim');
+
+  if (namaEl) namaEl.innerText = student.nama;
+  if (nimEl) nimEl.innerText = `NIM: ${student.nim} • Kelas ${student.kelas}`;
+  if (targetNimEl) targetNimEl.value = student.nim;
+
+  const t1El = document.getElementById('input-grade-t1');
+  const t2El = document.getElementById('input-grade-t2');
+  const t3El = document.getElementById('input-grade-t3');
+  const partEl = document.getElementById('input-grade-part');
+  const notesEl = document.getElementById('input-grade-notes');
+
+  if (t1El) t1El.value = g.tugas1;
+  if (t2El) t2El.value = g.tugas2;
+  if (t3El) t3El.value = g.tugas3;
+  if (partEl) partEl.value = g.partisipasi;
+  if (notesEl) notesEl.value = g.catatan || '';
+
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeGradeModal = function() {
+  const modal = document.getElementById('tutor-grade-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+};
+
+window.handleSaveGrade = function(e) {
+  if (e) e.preventDefault();
+  const nim = document.getElementById('grade-student-target-nim')?.value;
+  if (!nim) return;
+
+  const t1 = parseFloat(document.getElementById('input-grade-t1')?.value) || 0;
+  const t2 = parseFloat(document.getElementById('input-grade-t2')?.value) || 0;
+  const t3 = parseFloat(document.getElementById('input-grade-t3')?.value) || 0;
+  const part = parseFloat(document.getElementById('input-grade-part')?.value) || 0;
+  const notes = document.getElementById('input-grade-notes')?.value || '';
+
+  if (!state.grades) state.grades = {};
+  state.grades[nim] = {
+    tugas1: t1,
+    tugas2: t2,
+    tugas3: t3,
+    partisipasi: part,
+    catatan: notes
+  };
+
+  localStorage.setItem('ut_grades', JSON.stringify(state.grades));
+  closeGradeModal();
+  renderApp();
+  showToast('Nilai mahasiswa berhasil disimpan & diperbarui!', 'success');
+};
+
+window.exportGradebookCSV = function(classId) {
+  const students = STUDENTS_DATA.filter(s => s.kelas === classId);
+  const course = COURSES_DATA[classId] || COURSES_DATA['5A'];
+  let csv = `REKAPITULASI NILAI AKADEMIK TUTORIAL UNIVERSITAS TERBUKA\n`;
+  csv += `Sentra Layanan Pokjar Nusa Indah - UPBJJ UT Palembang\n`;
+  csv += `Mata Kuliah: ${course.nama} (${course.kode})\n`;
+  csv += `Tutor Pengampu: ${TUTOR_DATA.nama}\n`;
+  csv += `Kelas: ${classId}\n\n`;
+  csv += `No,NIM,Nama Mahasiswa,Tugas 1,Tugas 2,Tugas 3,Rata-rata Tugas (70%),Partisipasi (30%),Nilai Akhir,Predikat,Catatan Masukan Tutor\n`;
+
+  students.forEach((s, idx) => {
+    const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85, catatan: '' };
+    const avgTugas = ((g.tugas1 + g.tugas2 + g.tugas3) / 3).toFixed(1);
+    const finalScore = ((0.7 * parseFloat(avgTugas)) + (0.3 * g.partisipasi)).toFixed(1);
+    let gradeLetter = 'B';
+    if (finalScore >= 85) gradeLetter = 'A';
+    else if (finalScore >= 75) gradeLetter = 'B';
+    else if (finalScore >= 65) gradeLetter = 'C';
+    else gradeLetter = 'D';
+
+    const safeName = `"${s.nama.replace(/"/g, '""')}"`;
+    const safeNote = `"${(g.catatan || '').replace(/"/g, '""')}"`;
+    csv += `${idx + 1},${s.nim},${safeName},${g.tugas1},${g.tugas2},${g.tugas3},${avgTugas},${g.partisipasi},${finalScore},${gradeLetter},${safeNote}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `Rekap_Nilai_UT_Kelas_${classId}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast(`Rekap nilai Kelas ${classId} berhasil diunduh (CSV)!`, 'success');
+};
+
+window.switchTutorTab = function(tab) {
+  state.tutorTab = tab;
+  renderApp();
+};
+
+window.switchTutorSesiFilter = function(sesi) {
+  state.tutorSesiFilter = parseInt(sesi);
+  renderApp();
 };
 
 window.handleModalLogin = function(e) {
@@ -784,19 +930,31 @@ function renderHomeView() {
         </div>
       </section>
 
-      <!-- LOGIN MAHASISWA & QUICK SELECTOR -->
+      <!-- LOGIN SECTION (TABS: MAHASISWA & TUTOR) -->
       <section id="login-section" class="rounded-3xl bg-white border border-slate-200 shadow-lg p-5 sm:p-8 md:p-10 relative overflow-hidden">
-        <div class="max-w-2xl mx-auto flex flex-col space-y-6">
+        <div class="max-w-2xl mx-auto flex flex-col space-y-5">
           
-          <div class="text-center space-y-2">
+          <!-- Role Selector Tabs -->
+          <div class="flex p-1 rounded-2xl bg-slate-100 max-w-sm mx-auto w-full border border-slate-200/80">
+            <button type="button" onclick="switchLoginRole('mahasiswa')" id="tab-login-mahasiswa" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${state.loginRole !== 'tutor' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+              👨‍🎓 Login Mahasiswa
+            </button>
+            <button type="button" onclick="switchLoginRole('tutor')" id="tab-login-tutor" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${state.loginRole === 'tutor' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
+              👨‍🏫 Login Tutor
+            </button>
+          </div>
+
+          <div class="text-center space-y-1.5">
             <div class="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 text-[#003367] flex items-center justify-center mx-auto shadow-xs">
               <span class="material-symbols-outlined text-[28px]">lock</span>
             </div>
-            <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Login Mahasiswa
+            <h2 id="login-title" class="text-2xl font-extrabold text-slate-900 tracking-tight">
+              ${state.loginRole === 'tutor' ? 'Login Tutor Pengampu' : 'Login Mahasiswa'}
             </h2>
-            <p class="text-xs sm:text-sm text-slate-500">
-              Sesuai ketentuan akademik UT, gunakan <strong class="text-[#003367]">Email Kampus</strong> sebagai Username dan <strong class="text-[#003367]">NIM</strong> sebagai Password untuk mengakses kelas & materi perkuliahan.
+            <p id="login-desc" class="text-xs sm:text-sm text-slate-500">
+              ${state.loginRole === 'tutor' 
+                ? 'Portal akses Tutor (<strong>' + TUTOR_DATA.nama + '</strong>) untuk memantau aktivitas dan memberikan penilaian mahasiswa.' 
+                : 'Sesuai ketentuan akademik UT, gunakan <strong class="text-[#003367]">Email Kampus</strong> sebagai Username dan <strong class="text-[#003367]">NIM</strong> sebagai Password untuk mengakses kelas & materi perkuliahan.'}
             </p>
           </div>
 
@@ -806,25 +964,31 @@ function renderHomeView() {
           <!-- Formal Login Form -->
           <form onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1.5">Username (Email Kampus atau NIM)</label>
+              <label id="login-user-label" class="block text-xs font-bold text-slate-700 mb-1.5">
+                ${state.loginRole === 'tutor' ? 'Email Tutor atau NIP / Username' : 'Username (Email Kampus atau NIM)'}
+              </label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                   <span class="material-symbols-outlined text-[20px]">mail</span>
                 </span>
                 <input id="login-username" type="text" required
-                       placeholder="Contoh: 860080512@ecampus.ut.ac.id atau 860080512" 
+                       placeholder="${state.loginRole === 'tutor' ? 'bagus.panca@ecampus.ut.ac.id' : 'Contoh: 860080512@ecampus.ut.ac.id atau 860080512'}" 
+                       value="${state.loginRole === 'tutor' ? 'bagus.panca@ecampus.ut.ac.id' : ''}"
                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1.5">Password (Nomor Induk Mahasiswa / NIM)</label>
+              <label id="login-pw-label" class="block text-xs font-bold text-slate-700 mb-1.5">
+                ${state.loginRole === 'tutor' ? 'Password Tutor' : 'Password (Nomor Induk Mahasiswa / NIM)'}
+              </label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                   <span class="material-symbols-outlined text-[20px]">key</span>
                 </span>
                 <input id="login-password" type="password" required
-                       placeholder="Masukkan NIM Anda" 
+                       placeholder="${state.loginRole === 'tutor' ? 'Masukkan Password Tutor (default: tutor123)' : 'Masukkan NIM Anda'}" 
+                       value="${state.loginRole === 'tutor' ? 'tutor123' : ''}"
                        class="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
                 <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
                   <span id="pw-icon" class="material-symbols-outlined text-[20px]">visibility</span>
@@ -834,73 +998,29 @@ function renderHomeView() {
 
             <button type="submit" class="w-full h-12 rounded-xl bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-sm shadow-md active:scale-98 transition flex items-center justify-center gap-2">
               <span class="material-symbols-outlined text-[20px]">login</span>
-              <span>Masuk ke Kelas Saya</span>
+              <span id="login-btn-text">${state.loginRole === 'tutor' ? 'Masuk ke Dasbor Penilaian Tutor' : 'Masuk ke Kelas Saya'}</span>
             </button>
           </form>
-
-          <!-- QUICK DEMO SELECTOR (SUPER USER FRIENDLY) -->
-          <div class="pt-4 border-t border-slate-200/80 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-700">Pintasan Uji Coba Cepat (Pilih Mahasiswa Langsung):</span>
-              <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">78 Akun Tersedia</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label class="text-[11px] font-semibold text-slate-500 mb-1 block">Pilih Mahasiswa Berdasarkan Kelas:</label>
-                <select id="quick-student-select" onchange="if(this.value) quickLogin(this.value)" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#004990]">
-                  <option value="">-- Pilih Mahasiswa untuk Login Otomatis --</option>
-                  <optgroup label="Kelas 5A (SPGK4410 - 29 Mhs)">
-                    ${STUDENTS_DATA.filter(s => s.kelas === '5A').map(s => `
-                      <option value="${s.nim}">${s.nama} (${s.nim})</option>
-                    `).join('')}
-                  </optgroup>
-                  <optgroup label="Kelas 6A (SPDA4401 - 19 Mhs)">
-                    ${STUDENTS_DATA.filter(s => s.kelas === '6A').map(s => `
-                      <option value="${s.nim}">${s.nama} (${s.nim})</option>
-                    `).join('')}
-                  </optgroup>
-                  <optgroup label="Kelas 7C1 (SPGK4408 - 15 Mhs)">
-                    ${STUDENTS_DATA.filter(s => s.kelas === '7C1').map(s => `
-                      <option value="${s.nim}">${s.nama} (${s.nim})</option>
-                    `).join('')}
-                  </optgroup>
-                  <optgroup label="Kelas 7D1 (SPGK4408 - 15 Mhs)">
-                    ${STUDENTS_DATA.filter(s => s.kelas === '7D1').map(s => `
-                      <option value="${s.nim}">${s.nama} (${s.nim})</option>
-                    `).join('')}
-                  </optgroup>
-                </select>
-              </div>
-
-              <div class="flex flex-col justify-end">
-                <button type="button" onclick="quickLoginTutor()" class="w-full h-[42px] px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs flex items-center justify-center gap-1.5 transition">
-                  <span class="material-symbols-outlined text-amber-600 text-[18px]">admin_panel_settings</span>
-                  <span>Masuk sebagai Tutor (Bagus Panca Wiratama)</span>
-                </button>
-              </div>
-            </div>
-          </div>
 
         </div>
       </section>
 
       <!-- INFORMASI POKJAR & SENTRA BELAJAR -->
-      <section class="rounded-3xl bg-slate-100/80 border border-slate-200 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-[#003367] text-white flex items-center justify-center flex-shrink-0">
-            <span class="material-symbols-outlined text-[26px]">pin_drop</span>
+      <section class="rounded-3xl bg-slate-100/90 border border-slate-200 p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-[#003367] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+            <span class="material-symbols-outlined text-[24px]">pin_drop</span>
           </div>
           <div>
-            <h3 class="text-base font-bold text-slate-900">Sentra Layanan UT Pokjar Nusa Indah</h3>
+            <h3 class="text-sm sm:text-base font-extrabold text-slate-900">Sentra Layanan UT Pokjar Nusa Indah</h3>
             <p class="text-xs text-slate-600 mt-0.5">Kabupaten OKU Timur, Sumatera Selatan • Afiliasi UPBJJ Universitas Terbuka Palembang</p>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
-          <a href="https://wa.me/6282178901234" target="_blank" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+          <a href="https://wa.me/6285669209950" target="_blank" class="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition active:scale-95">
             <span class="material-symbols-outlined text-[18px]">chat</span>
-            <span>Kontak WhatsApp Pokjar</span>
+            <span>Hubungi: +62 856-6920-9950</span>
           </a>
         </div>
       </section>
@@ -2140,96 +2260,447 @@ function attachTutorialEvents() {
 function renderTutorManagementView() {
   const selectedClass = state.currentClassId || '5A';
   const studentsInClass = STUDENTS_DATA.filter(s => s.kelas === selectedClass);
-  const course = COURSES_DATA[selectedClass];
+  const course = COURSES_DATA[selectedClass] || COURSES_DATA['5A'];
+  const activeTab = state.tutorTab || 'gradebook';
+  const sesiFilter = state.tutorSesiFilter || 1;
+  const tutorials = TUTORIALS_DATA[selectedClass] || TUTORIALS_DATA['5A'];
+  const currentTut = tutorials.find(t => t.sesi === sesiFilter) || tutorials[0];
+
+  // Calculate Class Average
+  let totalScore = 0;
+  let gradedCount = 0;
+  studentsInClass.forEach(s => {
+    const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85 };
+    const avgTugas = (g.tugas1 + g.tugas2 + g.tugas3) / 3;
+    const finalScore = (0.7 * avgTugas) + (0.3 * g.partisipasi);
+    totalScore += finalScore;
+    gradedCount++;
+  });
+  const classAverage = gradedCount > 0 ? (totalScore / gradedCount).toFixed(1) : '85.0';
 
   return `
     <div class="flex flex-col space-y-6 pb-20">
       
       <!-- Tutor Header Card -->
-      <section class="rounded-3xl bg-[#003367] text-white p-6 sm:p-8 shadow-md flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-20 rounded-2xl overflow-hidden shadow-md ring-2 ring-amber-400 border border-white flex-shrink-0 bg-white">
-            <img src="${TUTOR_DATA.foto}" alt="${TUTOR_DATA.nama}" class="w-full h-full object-cover object-top" />
+      <section class="rounded-3xl bg-gradient-to-r from-[#003367] via-[#004990] to-[#0b2545] text-white p-5 sm:p-7 shadow-lg border border-blue-900/40 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-20 sm:w-20 sm:h-24 rounded-2xl overflow-hidden shadow-lg ring-3 ring-amber-400 border-2 border-white flex-shrink-0 bg-slate-100">
+              <img src="${TUTOR_DATA.foto}" alt="${TUTOR_DATA.nama}" class="w-full h-full object-cover object-top" />
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-400 text-slate-950 uppercase tracking-wide">
+                  Tutor Pengampu Resmi
+                </span>
+                <span class="text-[11px] text-blue-200 hidden sm:inline">• Pokjar Nusa Indah</span>
+              </div>
+              <h1 class="text-lg sm:text-2xl font-extrabold leading-tight">${TUTOR_DATA.nama}</h1>
+              <p class="text-xs text-blue-100">
+                NIP: <span class="font-mono font-bold">${TUTOR_DATA.nip}</span> • ${TUTOR_DATA.upbjj}
+              </p>
+            </div>
           </div>
-          <div>
-            <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Panel Tutor Pengampu</span>
-            <h1 class="text-xl sm:text-2xl font-extrabold">${TUTOR_DATA.nama}</h1>
-            <p class="text-xs text-blue-200 mt-0.5">${TUTOR_DATA.pokjar} • ${TUTOR_DATA.upbjj}</p>
+
+          <div class="flex items-center gap-2 self-stretch md:self-auto justify-end">
+            <button onclick="navigateTo('home')" class="h-10 px-3.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition">
+              <span class="material-symbols-outlined text-[18px]">home</span>
+              <span>Beranda</span>
+            </button>
+            <button onclick="handleLogout()" class="h-10 px-3.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 font-bold text-xs flex items-center gap-1.5 transition">
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+              <span>Keluar</span>
+            </button>
           </div>
         </div>
-
-        <button onclick="navigateTo('home')" class="h-10 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center gap-1.5 transition">
-          <span class="material-symbols-outlined text-[18px]">home</span>
-          <span>Ke Beranda Portal</span>
-        </button>
       </section>
 
-      <!-- Class Tab Switcher -->
-      <div class="flex items-center gap-2 overflow-x-auto p-1 bg-slate-100 rounded-2xl border border-slate-200">
-        <button onclick="navigateTo('tutor-view', {classId: '5A'})" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${selectedClass === '5A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
-          Kelas 5A (29 Mahasiswa)
-        </button>
-        <button onclick="navigateTo('tutor-view', {classId: '6A'})" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${selectedClass === '6A' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
-          Kelas 6A (19 Mahasiswa)
-        </button>
-        <button onclick="navigateTo('tutor-view', {classId: '7C1'})" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${selectedClass === '7C1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
-          Kelas 7C1 (15 Mahasiswa)
-        </button>
-        <button onclick="navigateTo('tutor-view', {classId: '7D1'})" class="flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs transition ${selectedClass === '7D1' ? 'bg-[#004990] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'}">
-          Kelas 7D1 (15 Mahasiswa)
-        </button>
-      </div>
+      <!-- 4 Class Selector Tabs -->
+      <section class="space-y-2">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Rombongan Belajar (Kelas):</span>
+          <span class="text-xs font-bold text-[#004990]">Aktif: Kelas ${selectedClass} (${studentsInClass.length} Mhs)</span>
+        </div>
 
-      <!-- Students Table -->
-      <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h2 class="text-base sm:text-lg font-extrabold text-slate-900">
-              Daftar Mahasiswa Resmi: Kelas ${selectedClass}
-            </h2>
-            <p class="text-xs text-slate-500 font-medium">${course.kode} - ${course.nama}</p>
-          </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          ${['5A', '6A', '7C1', '7D1'].map(cid => {
+            const isSel = selectedClass === cid;
+            const cInfo = COURSES_DATA[cid];
+            const count = STUDENTS_DATA.filter(s => s.kelas === cid).length;
+            return `
+              <button onclick="navigateTo('tutor-view', {classId: '${cid}'})" class="p-3.5 rounded-2xl border text-left transition-all ${isSel ? 'bg-[#003367] text-white border-[#003367] shadow-md ring-2 ring-[#003367]/20' : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'}">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-extrabold ${isSel ? 'text-amber-300' : 'text-[#004990]'}">KELAS ${cid}</span>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isSel ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-800'}">${count} Mhs</span>
+                </div>
+                <div class="text-[11px] font-semibold truncate ${isSel ? 'text-blue-100' : 'text-slate-600'}">${cInfo.kode}</div>
+                <div class="text-[10px] truncate ${isSel ? 'text-blue-200' : 'text-slate-400'}">${cInfo.nama}</div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </section>
 
-          <div class="relative w-full sm:w-64">
+      <!-- Class KPI Metrics -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Mahasiswa</span>
+          <span class="text-xl sm:text-2xl font-extrabold text-[#003367]">${studentsInClass.length} <span class="text-xs font-semibold text-slate-500">Orang</span></span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Mata Kuliah & Bobot</span>
+          <span class="text-base sm:text-lg font-extrabold text-slate-900">${course.kode} <span class="text-xs font-bold text-amber-600">(${course.sks} SKS)</span></span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rata-rata Nilai Kelas</span>
+          <span class="text-xl sm:text-2xl font-extrabold text-emerald-600">${classAverage} <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Sangat Baik</span></span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rangkaian Sesi</span>
+          <span class="text-xl sm:text-2xl font-extrabold text-amber-600">8 Sesi <span class="text-xs font-semibold text-slate-500">(3 TTM)</span></span>
+        </div>
+      </section>
+
+      <!-- Tutor Activity Sub-Tabs -->
+      <section class="border-b border-slate-200">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button onclick="switchTutorTab('gradebook')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'gradebook' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
+            <span class="material-symbols-outlined text-[18px]">assessment</span>
+            <span>1. Rekapitulasi & Lembar Nilai Akhir</span>
+          </button>
+          <button onclick="switchTutorTab('lkpd')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'lkpd' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
+            <span class="material-symbols-outlined text-[18px]">edit_note</span>
+            <span>2. Penilaian Tugas LKPD</span>
+          </button>
+          <button onclick="switchTutorTab('diskusi')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'diskusi' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
+            <span class="material-symbols-outlined text-[18px]">forum</span>
+            <span>3. Forum Pemantik & Diskusi</span>
+          </button>
+          <button onclick="switchTutorTab('kelompok')" class="px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap transition flex items-center gap-2 ${activeTab === 'kelompok' ? 'bg-[#003367] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'}">
+            <span class="material-symbols-outlined text-[18px]">groups</span>
+            <span>4. Kelompok Belajar</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Sub-Tab Content -->
+      <section>
+        ${activeTab === 'gradebook' ? renderTutorGradebookTab(selectedClass, course, studentsInClass) : ''}
+        ${activeTab === 'lkpd' ? renderTutorLkpdTab(selectedClass, course, studentsInClass, sesiFilter, currentTut) : ''}
+        ${activeTab === 'diskusi' ? renderTutorDiskusiTab(selectedClass, course, studentsInClass, sesiFilter, currentTut) : ''}
+        ${activeTab === 'kelompok' ? renderTutorKelompokTab(selectedClass, course) : ''}
+      </section>
+
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// TAB 1: REKAPITULASI NILAI AKHIR (GRADEBOOK)
+// ----------------------------------------------------------------------------
+function renderTutorGradebookTab(classId, course, students) {
+  return `
+    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900">
+            Lembar Penilaian & Rekapitulasi: Kelas ${classId}
+          </h2>
+          <p class="text-xs text-slate-500 font-medium">
+            ${course.kode} • ${course.nama} (Bobot: 70% Rata-rata Tugas + 30% Partisipasi)
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="relative flex-1 sm:w-60">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 pointer-events-none">
               <span class="material-symbols-outlined text-[18px]">search</span>
             </span>
             <input id="student-filter" onkeyup="filterStudentsTable()" type="text" placeholder="Cari nama atau NIM..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#004990]" />
           </div>
-        </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs" id="students-table">
-            <thead>
-              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
-                <th class="py-3 px-3">No</th>
-                <th class="py-3 px-3">Nama Mahasiswa</th>
-                <th class="py-3 px-3">NIM (Password)</th>
-                <th class="py-3 px-3">Email (Username)</th>
-                <th class="py-3 px-3">Kelas</th>
-                <th class="py-3 px-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
-              ${studentsInClass.map((s, idx) => `
+          <button onclick="exportGradebookCSV('${classId}')" class="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs transition">
+            <span class="material-symbols-outlined text-[17px]">download</span>
+            <span>Unduh CSV</span>
+          </button>
+
+          <button onclick="window.print()" class="h-9 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1 transition">
+            <span class="material-symbols-outlined text-[17px]">print</span>
+            <span>Cetak</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs" id="students-table">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+              <th class="py-3 px-3">No</th>
+              <th class="py-3 px-3">Mahasiswa (NIM)</th>
+              <th class="py-3 px-3 text-center">Tugas 1 (S3)</th>
+              <th class="py-3 px-3 text-center">Tugas 2 (S5)</th>
+              <th class="py-3 px-3 text-center">Tugas 3 (S7)</th>
+              <th class="py-3 px-3 text-center">Partisipasi (30%)</th>
+              <th class="py-3 px-3 text-center">Nilai Akhir</th>
+              <th class="py-3 px-3 text-center">Predikat</th>
+              <th class="py-3 px-3">Catatan Tutor</th>
+              <th class="py-3 px-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+            ${students.map((s, idx) => {
+              const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85, catatan: '' };
+              const avgTugas = ((g.tugas1 + g.tugas2 + g.tugas3) / 3).toFixed(1);
+              const finalScore = ((0.7 * parseFloat(avgTugas)) + (0.3 * g.partisipasi)).toFixed(1);
+              let gradeBadge = 'bg-blue-100 text-blue-800';
+              let gradeLetter = 'B';
+              if (finalScore >= 85) { gradeBadge = 'bg-emerald-100 text-emerald-800'; gradeLetter = 'A'; }
+              else if (finalScore >= 75) { gradeBadge = 'bg-blue-100 text-blue-800'; gradeLetter = 'B'; }
+              else if (finalScore >= 65) { gradeBadge = 'bg-amber-100 text-amber-800'; gradeLetter = 'C'; }
+              else { gradeBadge = 'bg-rose-100 text-rose-800'; gradeLetter = 'D'; }
+
+              return `
                 <tr class="hover:bg-blue-50/40 transition">
-                  <td class="py-2.5 px-3 text-slate-400 font-mono">${idx + 1}</td>
-                  <td class="py-2.5 px-3 font-bold text-slate-900">${s.nama}</td>
-                  <td class="py-2.5 px-3 font-mono text-[#004990] font-semibold">${s.nim}</td>
-                  <td class="py-2.5 px-3 font-mono text-slate-500">${s.email}</td>
-                  <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">${s.kelas}</span></td>
-                  <td class="py-2.5 px-3 text-right">
-                    <button onclick="quickLogin('${s.nim}')" class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-[#004990] text-[#004990] hover:text-white font-bold text-[11px] transition">
-                      Masuk Akun
+                  <td class="py-3 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                  <td class="py-3 px-3">
+                    <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                    <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                  </td>
+                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas1}</td>
+                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas2}</td>
+                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas3}</td>
+                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.partisipasi}</td>
+                  <td class="py-3 px-3 text-center font-extrabold text-slate-900 text-sm">${finalScore}</td>
+                  <td class="py-3 px-3 text-center">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${gradeBadge}">${gradeLetter}</span>
+                  </td>
+                  <td class="py-3 px-3 text-slate-500 text-[11px] max-w-[180px] truncate" title="${g.catatan || ''}">
+                    ${g.catatan || '<span class="text-slate-300 italic">Belum ada catatan</span>'}
+                  </td>
+                  <td class="py-3 px-3 text-right">
+                    <button onclick="openGradeModal('${s.nim}')" class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] shadow-2xs transition flex items-center gap-1 ml-auto">
+                      <span class="material-symbols-outlined text-[14px]">edit</span>
+                      <span>Beri Nilai</span>
                     </button>
                   </td>
                 </tr>
-              `).join('')}
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// TAB 2: PENILAIAN TUGAS LKPD PER SESI
+// ----------------------------------------------------------------------------
+function renderTutorLkpdTab(classId, course, students, sesiFilter, currentTut) {
+  return `
+    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+      <!-- Sesi Selector Pills -->
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pilih Sesi Tutorial:</span>
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          ${[1, 2, 3, 4, 5, 6, 7, 8].map(s => `
+            <button onclick="switchTutorSesiFilter(${s})" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 ${sesiFilter === s ? 'bg-[#003367] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+              <span>Sesi ${s}</span>
+              ${s === 3 || s === 5 || s === 7 ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ''}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- LKPD Info Card -->
+      <div class="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-[#003367] text-white uppercase">Lembar Kerja Peserta Didik (LKPD) Sesi ${sesiFilter}</span>
+          <h3 class="text-sm sm:text-base font-extrabold text-slate-900 mt-1">${currentTut.lkpd_title || 'LKPD Sesi ' + sesiFilter + ': Analisis Kasus Pembelajaran'}</h3>
+          <p class="text-xs text-slate-600 mt-0.5">${currentTut.cpmk}</p>
+        </div>
+        <button onclick="showToast('Mengunduh lembar acuan LKPD Sesi ${sesiFilter}...', 'info')" class="h-9 px-3.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition flex-shrink-0">
+          <span class="material-symbols-outlined text-[17px] text-[#004990]">download</span>
+          <span>Unduh Format LKPD</span>
+        </button>
+      </div>
+
+      <!-- Submission and Grading Roster -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Status Pengumpulan & Penilaian Mahasiswa (${students.length} Mhs):</h4>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                <th class="py-2.5 px-3">No</th>
+                <th class="py-2.5 px-3">Mahasiswa</th>
+                <th class="py-2.5 px-3">File Dokumen LKPD</th>
+                <th class="py-2.5 px-3 text-center">Status</th>
+                <th class="py-2.5 px-3 text-center">Nilai LKPD</th>
+                <th class="py-2.5 px-3">Umpan Balik Tutor</th>
+                <th class="py-2.5 px-3 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
+              ${students.map((s, idx) => {
+                const g = (state.grades && state.grades[s.nim]) || { partisipasi: 85, catatan: '' };
+                const score = g.partisipasi || 85;
+                return `
+                  <tr class="hover:bg-slate-50/70 transition">
+                    <td class="py-2.5 px-3 text-slate-400 font-mono">${idx + 1}</td>
+                    <td class="py-2.5 px-3">
+                      <span class="font-extrabold text-slate-900 block">${s.nama}</span>
+                      <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
+                    </td>
+                    <td class="py-2.5 px-3">
+                      <span class="inline-flex items-center gap-1 font-mono text-[11px] text-[#004990] font-semibold">
+                        <span class="material-symbols-outlined text-[15px]">description</span>
+                        LKPD_${selectedClass}_S${sesiFilter}_${s.nim}.pdf
+                      </span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Sudah Mengumpulkan</span>
+                    </td>
+                    <td class="py-2.5 px-3 text-center font-extrabold text-slate-900 text-sm">${score}</td>
+                    <td class="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${g.catatan || ''}">
+                      ${g.catatan || '<span class="text-slate-300 italic">Belum ada umpan balik</span>'}
+                    </td>
+                    <td class="py-2.5 px-3 text-right">
+                      <button onclick="openGradeModal('${s.nim}')" class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] transition">
+                        Beri Nilai & Catatan
+                      </button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>
       </div>
+    </div>
+  `;
+}
 
+// ----------------------------------------------------------------------------
+// TAB 3: PEMANTAUAN FORUM PEMANTIK & DISKUSI
+// ----------------------------------------------------------------------------
+function renderTutorDiskusiTab(classId, course, students, sesiFilter, currentTut) {
+  const commentKey = `${classId}_sesi${sesiFilter}`;
+  const existingComments = state.comments[commentKey] || [];
+
+  return `
+    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+      <!-- Sesi Selector Pills -->
+      <div class="space-y-2">
+        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Pilih Sesi Tutorial:</span>
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          ${[1, 2, 3, 4, 5, 6, 7, 8].map(s => `
+            <button onclick="switchTutorSesiFilter(${s})" class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 ${sesiFilter === s ? 'bg-[#003367] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+              <span>Sesi ${s}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Pemantik Card -->
+      <div class="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-amber-600">lightbulb</span>
+          <span class="text-xs font-extrabold text-amber-950 uppercase tracking-wide">Pertanyaan Pemantik Tutor (Sesi ${sesiFilter}):</span>
+        </div>
+        <div class="space-y-2">
+          ${(currentTut.pemantik || []).map((p, idx) => `
+            <div class="flex items-start gap-2.5 text-xs sm:text-sm font-semibold text-slate-800">
+              <span class="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">${idx + 1}</span>
+              <p class="leading-relaxed">${p}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Discussion Stream -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Tanggapan Masuk dari Mahasiswa Kelas ${classId} (${existingComments.length}):
+          </h4>
+        </div>
+
+        ${existingComments.length === 0 ? `
+          <div class="p-8 rounded-2xl border border-dashed border-slate-300 text-center space-y-2">
+            <span class="material-symbols-outlined text-[32px] text-slate-400">forum</span>
+            <p class="text-xs text-slate-500 font-medium">Belum ada respons mahasiswa yang diposting untuk Sesi ${sesiFilter}.</p>
+          </div>
+        ` : `
+          <div class="space-y-2.5">
+            ${existingComments.map(c => `
+              <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 shadow-2xs flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-[#003367] font-extrabold text-xs flex items-center justify-center flex-shrink-0">
+                  ${c.nama.charAt(0)}
+                </div>
+                <div class="flex-1 space-y-1">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-900">${c.nama}</span>
+                    <span class="text-[10px] text-slate-400">${c.waktu}</span>
+                  </div>
+                  <p class="text-xs text-slate-700 leading-relaxed">${c.teks}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// TAB 4: PEMBAGIAN KELOMPOK BELAJAR KELAS
+// ----------------------------------------------------------------------------
+function renderTutorKelompokTab(classId, course) {
+  const groups = GROUPS_BY_CLASS[classId] || [];
+
+  return `
+    <div class="rounded-3xl bg-white border border-slate-200 shadow-sm p-5 sm:p-6 space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-slate-900">
+            Daftar Pembagian Kelompok Belajar: Kelas ${classId}
+          </h2>
+          <p class="text-xs text-slate-500 font-medium">${course.kode} - ${course.nama}</p>
+        </div>
+        <span class="text-xs font-bold text-[#004990] bg-blue-50 px-3 py-1 rounded-xl border border-blue-100">
+          ${groups.length} Kelompok Terdaftar
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        ${groups.map(g => `
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-[#003367] flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-[#004990]">group</span>
+                <span>${g.nama}</span>
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-900">
+                ${g.anggota.length} Anggota
+              </span>
+            </div>
+
+            <ul class="space-y-1.5 text-xs text-slate-700">
+              ${g.anggota.map((m, idx) => `
+                <li class="flex items-center gap-2 p-1.5 rounded-lg bg-white border border-slate-100 font-medium">
+                  <span class="w-4 h-4 rounded-full bg-slate-100 text-slate-600 text-[10px] flex items-center justify-center font-bold flex-shrink-0">${idx + 1}</span>
+                  <span class="truncate">${m}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `).join('')}
+      </div>
     </div>
   `;
 }
