@@ -1,0 +1,548 @@
+[
+  {
+    "id": 1,
+    "nama": "RIZKI ARDIANSYAH",
+    "nim": "859785628",
+    "email": "859785628@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 2,
+    "nama": "SELA OKTAFIANA",
+    "nim": "859786042",
+    "email": "859786042@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 3,
+    "nama": "SEPTI NURUL FADILAH",
+    "nim": "859786651",
+    "email": "859786651@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 4,
+    "nama": "SEPTA RIA ANGGRAINI",
+    "nim": "859791109",
+    "email": "859791109@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 5,
+    "nama": "RISTA ARDELA",
+    "nim": "859791352",
+    "email": "859791352@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 6,
+    "nama": "SERLIYANI",
+    "nim": "859792458",
+    "email": "859792458@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 7,
+    "nama": "ROHMAD ALI SODIQIN",
+    "nim": "859800064",
+    "email": "859800064@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 8,
+    "nama": "RINDI SAFITRI",
+    "nim": "859801303",
+    "email": "859801303@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 9,
+    "nama": "ROMI TAMARA",
+    "nim": "859802036",
+    "email": "859802036@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 10,
+    "nama": "RINI RAMADANI",
+    "nim": "859803131",
+    "email": "859803131@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 11,
+    "nama": "RINA HINDRIANI",
+    "nim": "859804079",
+    "email": "859804079@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 12,
+    "nama": "RINDU MAYDJOTI",
+    "nim": "859808377",
+    "email": "859808377@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 13,
+    "nama": "ADILLA DONNY PRATAMA",
+    "nim": "859812908",
+    "email": "859812908@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 14,
+    "nama": "MERAWATI",
+    "nim": "860888915",
+    "email": "860888915@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 15,
+    "nama": "NYOMAN SUWANDO",
+    "nim": "878228339",
+    "email": "878228339@ecampus.ut.ac.id",
+    "kelas": "7D1"
+  },
+  {
+    "id": 16,
+    "nama": "MUFLIKH",
+    "nim": "859781613",
+    "email": "859781613@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 17,
+    "nama": "NOVA DEWI ARTIKA",
+    "nim": "859781835",
+    "email": "859781835@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 18,
+    "nama": "MESTI MUSLIKAH",
+    "nim": "859786382",
+    "email": "859786382@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 19,
+    "nama": "MARTIN ILYAS",
+    "nim": "859790952",
+    "email": "859790952@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 20,
+    "nama": "NINDA PUTRI WAHYUNI",
+    "nim": "859790977",
+    "email": "859790977@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 21,
+    "nama": "NELA SULIYAH",
+    "nim": "859792275",
+    "email": "859792275@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 22,
+    "nama": "NANIK YUNITA SARI",
+    "nim": "859792727",
+    "email": "859792727@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 23,
+    "nama": "MOCH ILHAM ANDALINO",
+    "nim": "859793886",
+    "email": "859793886@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 24,
+    "nama": "MADE DEWI ARYANTI",
+    "nim": "859793919",
+    "email": "859793919@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 25,
+    "nama": "MARLIANA",
+    "nim": "859796337",
+    "email": "859796337@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 26,
+    "nama": "MEILINDA MOULIDIA",
+    "nim": "859797622",
+    "email": "859797622@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 27,
+    "nama": "MASFURI MARDIANTO",
+    "nim": "859797851",
+    "email": "859797851@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 28,
+    "nama": "M DRAJAT WS",
+    "nim": "859797955",
+    "email": "859797955@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 29,
+    "nama": "MILA PERMATA LESTARI",
+    "nim": "859807637",
+    "email": "859807637@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 30,
+    "nama": "BETA RAMADIAH",
+    "nim": "859813282",
+    "email": "859813282@ecampus.ut.ac.id",
+    "kelas": "7C1"
+  },
+  {
+    "id": 31,
+    "nama": "ENDAH GUSTRIHAYATI",
+    "nim": "877606024",
+    "email": "877606024@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 32,
+    "nama": "IMROATUL MIFTAH ADITIN",
+    "nim": "877762336",
+    "email": "877762336@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 33,
+    "nama": "ALEFANNO MIRZARA LUIRDENSA",
+    "nim": "877763528",
+    "email": "877763528@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 34,
+    "nama": "ARDILA BUNGA WIJAYA",
+    "nim": "877763639",
+    "email": "877763639@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 35,
+    "nama": "AJENG NURUL QHOMARIAH",
+    "nim": "877764845",
+    "email": "877764845@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 36,
+    "nama": "ISNAENI KHASANAH",
+    "nim": "877765016",
+    "email": "877765016@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 37,
+    "nama": "EKA SUSANTI",
+    "nim": "877765023",
+    "email": "877765023@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 38,
+    "nama": "AGE VINA PANDU WINATA",
+    "nim": "877765245",
+    "email": "877765245@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 39,
+    "nama": "SERLY LISTIANI",
+    "nim": "877765324",
+    "email": "877765324@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 40,
+    "nama": "BERLIANA ERISA PUTRI",
+    "nim": "877766831",
+    "email": "877766831@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 41,
+    "nama": "USWAH NUR AZIZAH",
+    "nim": "877766903",
+    "email": "877766903@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 42,
+    "nama": "HENDRA KURNIAWAN",
+    "nim": "877768978",
+    "email": "877768978@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 43,
+    "nama": "META NOVI ASARI",
+    "nim": "877769615",
+    "email": "877769615@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 44,
+    "nama": "TRIA SEPTIA NINGSIH",
+    "nim": "878210888",
+    "email": "878210888@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 45,
+    "nama": "SRI SUPATMI",
+    "nim": "878211106",
+    "email": "878211106@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 46,
+    "nama": "TIKA ANJELIKA",
+    "nim": "878211414",
+    "email": "878211414@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 47,
+    "nama": "PUTRI RAMA DANI",
+    "nim": "878212011",
+    "email": "878212011@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 48,
+    "nama": "CITRA ANISA",
+    "nim": "878212272",
+    "email": "878212272@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 49,
+    "nama": "B HESTI CHARITA",
+    "nim": "878212606",
+    "email": "878212606@ecampus.ut.ac.id",
+    "kelas": "6A"
+  },
+  {
+    "id": 50,
+    "nama": "BIDAYATUN NURIL HASANAH",
+    "nim": "860080512",
+    "email": "860080512@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 51,
+    "nama": "TEGAR RETNO ASTUTI",
+    "nim": "860089042",
+    "email": "860089042@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 52,
+    "nama": "AYU WULANDARI",
+    "nim": "860100051",
+    "email": "860100051@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 53,
+    "nama": "SRI MULYANI",
+    "nim": "860101268",
+    "email": "860101268@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 54,
+    "nama": "IDHAM KOLIQ",
+    "nim": "860114099",
+    "email": "860114099@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 55,
+    "nama": "NANDA RAHMADHITA",
+    "nim": "860115076",
+    "email": "860115076@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 56,
+    "nama": "ASTUTI",
+    "nim": "860118372",
+    "email": "860118372@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 57,
+    "nama": "ANISA SAPUTRI",
+    "nim": "878220105",
+    "email": "878220105@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 58,
+    "nama": "PUTRI AMANDA",
+    "nim": "878220176",
+    "email": "878220176@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 59,
+    "nama": "DWI ASTUTI",
+    "nim": "878220667",
+    "email": "878220667@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 60,
+    "nama": "ZULIUS SAHARTIAN",
+    "nim": "878220753",
+    "email": "878220753@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 61,
+    "nama": "YENI DWI CAHYANI",
+    "nim": "878220943",
+    "email": "878220943@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 62,
+    "nama": "DEWI FATIMAH",
+    "nim": "878221991",
+    "email": "878221991@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 63,
+    "nama": "SLAMET ISTIANAH",
+    "nim": "878222352",
+    "email": "878222352@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 64,
+    "nama": "NIKEN ANANTA",
+    "nim": "878223583",
+    "email": "878223583@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 65,
+    "nama": "PUTRI WULANDARI",
+    "nim": "878223655",
+    "email": "878223655@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 66,
+    "nama": "SYIFA RAHMALINA",
+    "nim": "878223877",
+    "email": "878223877@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 67,
+    "nama": "WAHYU PUJI LESTARI",
+    "nim": "878225777",
+    "email": "878225777@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 68,
+    "nama": "MARKHANA SANTOSO",
+    "nim": "878226761",
+    "email": "878226761@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 69,
+    "nama": "ANGGI MELANI",
+    "nim": "878226912",
+    "email": "878226912@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 70,
+    "nama": "HENI OKTAVIANI",
+    "nim": "878227193",
+    "email": "878227193@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 71,
+    "nama": "MONIKA AMANDA",
+    "nim": "878227258",
+    "email": "878227258@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 72,
+    "nama": "SITI AISYAH",
+    "nim": "878228163",
+    "email": "878228163@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 73,
+    "nama": "LEDIA FIRLY PRASASTI",
+    "nim": "878228195",
+    "email": "878228195@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 74,
+    "nama": "DEBY MONA YULIANTI",
+    "nim": "878228353",
+    "email": "878228353@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 75,
+    "nama": "NADILA USWATUN HASANAH",
+    "nim": "878228511",
+    "email": "878228511@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 76,
+    "nama": "A NOFRI AGUNG",
+    "nim": "878230518",
+    "email": "878230518@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 77,
+    "nama": "SRI AFRIANI",
+    "nim": "878231448",
+    "email": "878231448@ecampus.ut.ac.id",
+    "kelas": "5A"
+  },
+  {
+    "id": 78,
+    "nama": "ISTIQOMAH",
+    "nim": "878232536",
+    "email": "878232536@ecampus.ut.ac.id",
+    "kelas": "5A"
+  }
+]

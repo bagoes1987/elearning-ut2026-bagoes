@@ -1,0 +1,15 @@
+# Temporary Excel and lock files
+~$*
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Editor settings
+.vscode/
+.idea/
