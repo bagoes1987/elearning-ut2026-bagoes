@@ -406,6 +406,23 @@ function renderApp() {
 // NAVBAR & MOBILE NAVIGATION
 // ============================================================================
 
+window.handleBottomNavProfile = function() {
+  if (state.currentUser) {
+    if (state.currentUser.role === 'tutor') {
+      navigateTo('tutor-view');
+    } else {
+      navigateTo('dashboard', { classId: state.currentUser.kelas });
+    }
+  } else {
+    openLoginModal();
+  }
+};
+
+window.handleDrawerLogin = function() {
+  closeDrawer();
+  openLoginModal();
+};
+
 function renderNavbar() {
   const navContainer = document.getElementById('app-navbar');
   if (!navContainer) return;
@@ -414,19 +431,19 @@ function renderNavbar() {
   const user = state.currentUser;
 
   navContainer.innerHTML = `
-    <div class="h-16 px-4 md:px-8 max-w-7xl mx-auto flex items-center justify-between gap-3">
+    <div class="h-14 sm:h-16 px-3 sm:px-6 md:px-8 max-w-7xl mx-auto flex items-center justify-between gap-2">
       <!-- Left: Mobile Menu Trigger & UT Identity -->
-      <div class="flex items-center gap-3">
-        <button onclick="openDrawer()" type="button" aria-label="Menu" class="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 active:scale-95 transition">
-          <span class="material-symbols-outlined text-[24px]">menu</span>
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button onclick="openDrawer()" type="button" aria-label="Menu" class="md:hidden w-9 h-9 flex items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 active:scale-95 transition flex-shrink-0">
+          <span class="material-symbols-outlined text-[22px]">menu</span>
         </button>
 
-        <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-2.5 group">
+        <a href="javascript:void(0)" onclick="navigateTo('home')" class="flex items-center gap-2 group min-w-0">
           <img src="favicon.png" 
-               alt="Logo UT" class="h-9 w-auto object-contain flex-shrink-0 group-hover:scale-105 transition" />
-          <div class="flex flex-col">
-            <span class="text-sm font-extrabold text-[#003367] tracking-tight leading-tight group-hover:text-[#004990]">e-learningut2026.2</span>
-            <span class="text-[11px] font-semibold text-slate-500">Pokjar Nusa Indah • OKU Timur</span>
+               alt="Logo UT" class="h-8 sm:h-9 w-auto object-contain flex-shrink-0 group-hover:scale-105 transition" />
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs sm:text-sm font-extrabold text-[#003367] tracking-tight leading-tight group-hover:text-[#004990] truncate whitespace-nowrap">e-learningut2026.2</span>
+            <span class="text-[10px] sm:text-[11px] font-semibold text-slate-500 truncate whitespace-nowrap hidden xs:block sm:block">Pokjar Nusa Indah</span>
           </div>
         </a>
       </div>
@@ -451,7 +468,7 @@ function renderNavbar() {
       </div>
 
       <!-- Right: User Badge or Login Trigger + Phone Mockup Toggle -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         <!-- Desktop Device Simulator Button -->
         <button onclick="togglePhonePreview()" class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition" title="Alihkan mode pratinjau tampilan layar HP / Desktop">
           <span id="preview-btn-icon" class="material-symbols-outlined text-[17px] text-[#004990]">smartphone</span>
@@ -459,25 +476,26 @@ function renderNavbar() {
         </button>
 
         ${isLogged ? `
-          <div class="flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-full pl-2 pr-1 py-1">
+          <div class="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200/80 rounded-full pl-2 pr-1 py-0.5 sm:py-1">
             <div class="flex flex-col text-right">
-              <span class="text-xs font-bold text-slate-800 truncate max-w-[130px] sm:max-w-[180px]">${user.nama}</span>
-              <span class="text-[10px] font-semibold text-[#004990]">
-                ${user.role === 'tutor' ? 'Tutor Pengampu' : `Kelas ${user.kelas} • ${user.nim}`}
+              <span class="text-xs font-bold text-slate-800 truncate max-w-[90px] sm:max-w-[160px]">${user.nama.split(' ')[0]}</span>
+              <span class="text-[9px] sm:text-[10px] font-semibold text-[#004990]">
+                ${user.role === 'tutor' ? 'Tutor' : `${user.kelas}`}
               </span>
             </div>
-            <div class="w-8 h-8 rounded-full overflow-hidden ring-2 ring-[#004990]/20 flex-shrink-0 bg-white">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden ring-2 ring-[#004990]/20 flex-shrink-0 bg-white">
               <img src="${user.role === 'tutor' ? TUTOR_DATA.foto : 'bagus_avatar.jpg'}" alt="${user.nama}" class="w-full h-full object-cover object-top" />
             </div>
-            <button onclick="handleLogout()" title="Keluar Akun" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-slate-400 hover:text-red-600 transition">
-              <span class="material-symbols-outlined text-[18px]">logout</span>
+            <button onclick="handleLogout()" title="Keluar Akun" class="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-slate-400 hover:text-red-600 transition">
+              <span class="material-symbols-outlined text-[16px] sm:text-[18px]">logout</span>
             </button>
           </div>
         ` : `
-          <a href="#login-section" onclick="state.view !== 'home' ? navigateTo('home') : null" class="h-9 px-4 rounded-xl bg-[#003367] hover:bg-[#004990] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition">
-            <span class="material-symbols-outlined text-[17px] text-[#F7B500]">lock_open</span>
-            <span>Login Mahasiswa</span>
-          </a>
+          <button onclick="openLoginModal()" class="h-8 sm:h-9 px-2.5 sm:px-4 rounded-xl bg-[#003367] hover:bg-[#004990] text-white text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95 transition">
+            <span class="material-symbols-outlined text-[16px] text-[#F7B500]">lock_open</span>
+            <span class="hidden sm:inline">Login Mahasiswa</span>
+            <span class="sm:hidden">Login</span>
+          </button>
         `}
       </div>
     </div>
@@ -498,12 +516,12 @@ function renderDrawer() {
     <!-- Aside Panel -->
     <aside id="mobile-drawer" class="fixed top-0 bottom-0 left-0 w-[295px] z-50 bg-white shadow-2xl flex flex-col transform -translate-x-full transition-transform duration-300 ease-in-out">
       <!-- Drawer Header -->
-      <div class="h-20 px-4 flex items-center justify-between bg-slate-50 border-b border-slate-200">
+      <div class="h-16 px-4 flex items-center justify-between bg-slate-50 border-b border-slate-200">
         <div class="flex items-center gap-2.5">
-          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjROQqW5HM0X_BP7vOXY-1pfmO199rDc8t_TBughWPD3z4ICcAzSFkpU319VoZnuUDCwvfW3JXwiZs0KtZddPj6KTjkGm6u1XybG_rFWx68vrXpivEchNvkgBIQltp-86Y9VArHrgCF3Gxot7ml6URmz1gW_pzT2PEWwFAgXpiFBEhJQxu4VQK7qLh6EHY9M2VLubCprwCGQDcmm6AoJV8ZuS9YvMkp6fFka6Qo6OlIyVIXiXwra_D1754rbzwl1nS" alt="Logo UT" class="h-8 w-auto object-contain" />
+          <img src="favicon.png" alt="Logo UT" class="h-8 w-auto object-contain" />
           <div class="flex flex-col">
-            <span class="text-sm font-bold text-slate-900">Pokjar Nusa Indah</span>
-            <span class="text-[11px] font-semibold text-[#004990]">UPBJJ UT Palembang</span>
+            <span class="text-sm font-bold text-slate-900 leading-tight">e-learningut2026.2</span>
+            <span class="text-[11px] font-semibold text-[#004990]">Pokjar Nusa Indah</span>
           </div>
         </div>
         <button onclick="closeDrawer()" class="w-8 h-8 flex items-center justify-center text-slate-500 rounded-lg hover:bg-slate-200 transition">
@@ -585,7 +603,7 @@ function renderDrawer() {
             <span>Keluar Akun</span>
           </button>
         ` : `
-          <button onclick="closeDrawer(); navigateTo('home'); setTimeout(() => document.getElementById('login-section')?.scrollIntoView({behavior:'smooth'}), 100)" class="w-full h-10 rounded-xl bg-[#003367] text-white font-bold text-xs flex items-center justify-center gap-2 shadow transition">
+          <button onclick="handleDrawerLogin()" class="w-full h-10 rounded-xl bg-[#003367] text-white font-bold text-xs flex items-center justify-center gap-2 shadow transition">
             <span class="material-symbols-outlined text-[18px]">lock_open</span>
             <span>Login Mahasiswa</span>
           </button>
@@ -619,7 +637,7 @@ function renderBottomNav() {
           <span class="text-[10px] mt-0.5">Tutorial</span>
         </button>
 
-        <button onclick="${isLogged ? (state.currentUser.role === 'tutor' ? 'navigateTo(\"tutor-view\")' : 'navigateTo(\"dashboard\")') : 'navigateTo(\"home\"); setTimeout(() => document.getElementById(\"login-section\")?.scrollIntoView({behavior:\"smooth\"}), 100)'}" class="flex flex-col items-center justify-center w-16 h-12 rounded-xl transition ${state.view === 'tutor-view' ? 'text-[#003367] font-bold' : 'text-slate-500 hover:text-slate-800'}">
+        <button onclick="handleBottomNavProfile()" class="flex flex-col items-center justify-center w-16 h-12 rounded-xl transition ${state.view === 'tutor-view' ? 'text-[#003367] font-bold' : 'text-slate-500 hover:text-slate-800'}">
           <span class="material-symbols-outlined text-[24px]">${isLogged ? 'person' : 'account_circle'}</span>
           <span class="text-[10px] mt-0.5">${isLogged ? 'Profil' : 'Login'}</span>
         </button>
@@ -634,18 +652,18 @@ function renderBottomNav() {
 
 function renderHomeView() {
   return `
-    <div class="flex flex-col space-y-8 pb-16">
+    <div class="flex flex-col space-y-6 sm:space-y-8 pb-16">
       
       <!-- HERO BANNER -->
-      <section class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#003367] via-[#004990] to-[#0b2545] text-white p-6 sm:p-10 shadow-xl border border-blue-900/40">
+      <section class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#003367] via-[#004990] to-[#0b2545] text-white p-5 sm:p-8 md:p-10 shadow-xl border border-blue-900/40">
         <!-- Decorative Glow Orbs -->
         <div class="absolute -top-24 -right-24 w-80 h-80 bg-[#F7B500]/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
-          <div class="flex flex-col space-y-4 max-w-xl text-center md:text-left">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-amber-300 self-center md:self-start">
-              <span class="material-symbols-outlined text-[16px] text-[#F7B500]">stars</span>
+        <div class="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-8 justify-between">
+          <div class="flex flex-col space-y-3.5 max-w-xl text-center md:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] sm:text-xs font-semibold text-amber-300 self-center md:self-start">
+              <span class="material-symbols-outlined text-[15px] text-[#F7B500]">stars</span>
               <span>Portal Resmi Perkuliahan Semester Ganjil 2026/2027</span>
             </div>
 
@@ -660,23 +678,30 @@ function renderHomeView() {
               Sentra layanan pembelajaran digital terpadu bagi mahasiswa Universitas Terbuka di wilayah Kabupaten OKU Timur. Menyediakan modul ajar, bimbingan tutorial, penugasan terstruktur, dan penilaian berkala.
             </p>
 
-            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-              <a href="#login-section" class="h-11 px-6 rounded-xl bg-[#F7B500] hover:bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md active:scale-95 transition flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px]">login</span>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center md:justify-start gap-2.5 pt-2 w-full sm:w-auto">
+              <button onclick="openLoginModal()" class="h-11 px-5 rounded-xl bg-[#F7B500] hover:bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[19px]">login</span>
                 <span>Masuk ke Kelas Saya</span>
-              </a>
-              <a href="#kelas-section" class="h-11 px-5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/20 backdrop-blur-md active:scale-95 transition flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px]">school</span>
+              </button>
+              <a href="#kelas-section" class="h-11 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/20 backdrop-blur-md active:scale-95 transition flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[19px]">school</span>
                 <span>Lihat 4 Mata Kuliah</span>
               </a>
             </div>
+
+            <!-- Mobile Compact Stats Row -->
+            <div class="md:hidden flex flex-wrap items-center justify-center gap-2 pt-2 text-[11px] font-bold text-amber-200">
+              <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">📚 4 Kelas Aktif</span>
+              <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">👥 78 Mahasiswa</span>
+              <span class="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15">📍 OKU Timur</span>
+            </div>
           </div>
 
-          <!-- Mini Academic Badge Card -->
-          <div class="w-full md:w-auto flex flex-col items-center">
+          <!-- Mini Academic Badge Card (Visible on tablet & desktop) -->
+          <div class="hidden md:flex w-full md:w-auto flex-col items-center">
             <div class="bg-white/10 backdrop-blur-xl p-5 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center text-center max-w-xs w-full">
               <div class="w-16 h-16 rounded-2xl bg-white/20 p-2 shadow-inner flex items-center justify-center mb-3">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjROQqW5HM0X_BP7vOXY-1pfmO199rDc8t_TBughWPD3z4ICcAzSFkpU319VoZnuUDCwvfW3JXwiZs0KtZddPj6KTjkGm6u1XybG_rFWx68vrXpivEchNvkgBIQltp-86Y9VArHrgCF3Gxot7ml6URmz1gW_pzT2PEWwFAgXpiFBEhJQxu4VQK7qLh6EHY9M2VLubCprwCGQDcmm6AoJV8ZuS9YvMkp6fFka6Qo6OlIyVIXiXwra_D1754rbzwl1nS" alt="Logo UT" class="h-full w-auto object-contain" />
+                <img src="favicon.png" alt="Logo UT" class="h-full w-auto object-contain" />
               </div>
               <span class="text-xs font-bold text-white uppercase tracking-wider">UPBJJ UT Palembang</span>
               <span class="text-[11px] text-blue-200 mt-0.5">Sentra Layanan Pokjar Nusa Indah</span>
@@ -1387,7 +1412,7 @@ function renderTutorialDetailView() {
       </section>
 
       <!-- THE 8 STRUCTURED MENUS HORIZONTAL TAB BAR -->
-      <section class="sticky top-16 z-30 bg-slate-50/95 backdrop-blur-md pt-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <section class="sticky top-14 sm:top-16 z-30 bg-slate-50/95 backdrop-blur-md pt-2 pb-2">
         <div class="flex items-center gap-1.5 overflow-x-auto p-1.5 bg-white rounded-2xl border border-slate-200/90 shadow-sm no-scrollbar">
           ${renderTabButton('kelompok', 'group', '1. Pembagian Kelompok')}
           ${renderTabButton('rat_sat', 'description', '2. RAT / SAT')}
