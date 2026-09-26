@@ -679,13 +679,13 @@ function renderHomeView() {
             </p>
 
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-center md:justify-start gap-2.5 pt-2 w-full sm:w-auto">
-              <button onclick="openLoginModal()" class="h-11 px-5 rounded-xl bg-[#F7B500] hover:bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-[19px]">login</span>
-                <span>Masuk ke Kelas Saya</span>
-              </button>
-              <a href="#kelas-section" class="h-11 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/20 backdrop-blur-md active:scale-95 transition flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-[19px]">school</span>
-                <span>Lihat 4 Mata Kuliah</span>
+              <a href="#login-section" class="h-11 px-5 rounded-xl bg-[#F7B500] hover:bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[19px]">lock_open</span>
+                <span>Login Mahasiswa</span>
+              </a>
+              <a href="#tutor-section" class="h-11 px-4 rounded-xl bg-white/15 hover:bg-white/25 text-white font-semibold text-xs sm:text-sm border border-white/20 backdrop-blur-md active:scale-95 transition flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[19px]">person</span>
+                <span>Profil Tutor Pengampu</span>
               </a>
             </div>
 
@@ -722,10 +722,10 @@ function renderHomeView() {
       </section>
 
       <!-- TUTOR EXECUTIVE PROFILE CARD -->
-      <section class="rounded-3xl bg-white border border-slate-200 shadow-md overflow-hidden relative">
+      <section id="tutor-section" class="rounded-3xl bg-white border border-slate-200 shadow-md overflow-hidden relative">
         <div class="h-2 w-full bg-gradient-to-r from-[#003367] via-[#004990] to-[#F7B500]"></div>
         
-        <div class="p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
+        <div class="p-5 sm:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
           <!-- Tutor Photo with Border & Verified Badge -->
           <div class="relative flex-shrink-0">
             <div class="w-28 h-36 sm:w-32 sm:h-40 rounded-2xl overflow-hidden shadow-lg ring-4 ring-[#003367]/10 border-2 border-white bg-slate-100">
@@ -784,28 +784,8 @@ function renderHomeView() {
         </div>
       </section>
 
-      <!-- 4 KELAS & MATA KULIAH GRID -->
-      <section id="kelas-section" class="flex flex-col space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <span class="text-xs font-bold text-[#004990] uppercase tracking-wider">Daftar Rombongan Belajar</span>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              4 Kelas & Mata Kuliah Tutorial
-            </h2>
-          </div>
-          <span class="text-xs text-slate-500 font-medium">Klik pada kartu kelas untuk mengakses dashboard pembelajaran</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${renderCourseCard('5A')}
-          ${renderCourseCard('6A')}
-          ${renderCourseCard('7C1')}
-          ${renderCourseCard('7D1')}
-        </div>
-      </section>
-
-      <!-- LOGIN PORTAL MAHASISWA & QUICK SELECTOR -->
-      <section id="login-section" class="rounded-3xl bg-white border border-slate-200 shadow-lg p-6 sm:p-10 relative overflow-hidden">
+      <!-- LOGIN MAHASISWA & QUICK SELECTOR -->
+      <section id="login-section" class="rounded-3xl bg-white border border-slate-200 shadow-lg p-5 sm:p-8 md:p-10 relative overflow-hidden">
         <div class="max-w-2xl mx-auto flex flex-col space-y-6">
           
           <div class="text-center space-y-2">
@@ -813,10 +793,10 @@ function renderHomeView() {
               <span class="material-symbols-outlined text-[28px]">lock</span>
             </div>
             <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Portal Login Mahasiswa Pokjar
+              Login Mahasiswa
             </h2>
             <p class="text-xs sm:text-sm text-slate-500">
-              Sesuai ketentuan akademik UT, gunakan <strong class="text-[#003367]">Email Kampus</strong> sebagai Username dan <strong class="text-[#003367]">NIM</strong> sebagai Password.
+              Sesuai ketentuan akademik UT, gunakan <strong class="text-[#003367]">Email Kampus</strong> sebagai Username dan <strong class="text-[#003367]">NIM</strong> sebagai Password untuk mengakses kelas & materi perkuliahan.
             </p>
           </div>
 
