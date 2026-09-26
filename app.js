@@ -22,25 +22,9 @@ var state = {
 };
 if (typeof window !== 'undefined') window.state = state;
 
-// Generate Default Realistic Grades
+// Default Grades - returns empty object (clean state, no dummy data)
 function generateDefaultGrades() {
-  const g = {};
-  if (typeof STUDENTS_DATA !== 'undefined') {
-    STUDENTS_DATA.forEach((s, idx) => {
-      const t1 = 80 + ((idx * 3) % 15);
-      const t2 = 82 + ((idx * 5) % 14);
-      const t3 = 85 + ((idx * 2) % 12);
-      const part = 84 + ((idx * 7) % 13);
-      g[s.nim] = {
-        tugas1: t1,
-        tugas2: t2,
-        tugas3: t3,
-        partisipasi: part,
-        catatan: 'Keaktifan dalam tutorial dan pemahaman materi modul sangat baik.'
-      };
-    });
-  }
-  return g;
+  return {};
 }
 
 // Initialize Application
@@ -75,10 +59,13 @@ function loadLocalState() {
     if (savedQuiz) state.quizScores = JSON.parse(savedQuiz);
 
     const savedGrades = localStorage.getItem('ut_grades');
-    if (savedGrades) {
+    const gradesVersion = localStorage.getItem('ut_grades_v');
+    if (savedGrades && gradesVersion === 'v2_clean') {
       state.grades = JSON.parse(savedGrades);
     } else {
-      state.grades = generateDefaultGrades();
+      localStorage.removeItem('ut_grades');
+      localStorage.setItem('ut_grades_v', 'v2_clean');
+      state.grades = {};
     }
   } catch (e) {
     console.error('Error loading local storage state', e);
@@ -213,12 +200,12 @@ window.switchLoginRole = function(role) {
     if (userLabel) userLabel.innerText = 'Username / Email Tutor';
     if (userField) {
       userField.placeholder = 'bagoespancawiratama@gmail.com';
-      userField.value = 'bagoespancawiratama@gmail.com';
+      userField.value = '';
     }
     if (pwLabel) pwLabel.innerText = 'Password Tutor';
     if (pwField) {
       pwField.placeholder = 'Masukkan Password Tutor (18004313*)';
-      pwField.value = '18004313*';
+      pwField.value = '';
     }
     if (btnText) btnText.innerText = 'Masuk ke Dasbor Penilaian Tutor';
   } else {
@@ -307,7 +294,7 @@ window.closeLoginModal = function() {
 window.openGradeModal = function(nim) {
   const student = STUDENTS_DATA.find(s => s.nim === String(nim));
   if (!student) return;
-  const g = (state.grades && state.grades[nim]) || { tugas1: 80, tugas2: 80, tugas3: 80, partisipasi: 80, catatan: '' };
+  const g = (state.grades && state.grades[nim]) || null;
 
   const modal = document.getElementById('tutor-grade-modal');
   if (!modal) return;
@@ -326,11 +313,11 @@ window.openGradeModal = function(nim) {
   const partEl = document.getElementById('input-grade-part');
   const notesEl = document.getElementById('input-grade-notes');
 
-  if (t1El) t1El.value = g.tugas1;
-  if (t2El) t2El.value = g.tugas2;
-  if (t3El) t3El.value = g.tugas3;
-  if (partEl) partEl.value = g.partisipasi;
-  if (notesEl) notesEl.value = g.catatan || '';
+  if (t1El) t1El.value = (g && g.tugas1 !== undefined && g.tugas1 !== null && g.tugas1 !== '') ? g.tugas1 : '';
+  if (t2El) t2El.value = (g && g.tugas2 !== undefined && g.tugas2 !== null && g.tugas2 !== '') ? g.tugas2 : '';
+  if (t3El) t3El.value = (g && g.tugas3 !== undefined && g.tugas3 !== null && g.tugas3 !== '') ? g.tugas3 : '';
+  if (partEl) partEl.value = (g && g.partisipasi !== undefined && g.partisipasi !== null && g.partisipasi !== '') ? g.partisipasi : '';
+  if (notesEl) notesEl.value = (g && g.catatan) ? g.catatan : '';
 
   modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
@@ -349,18 +336,18 @@ window.handleSaveGrade = function(e) {
   const nim = document.getElementById('grade-student-target-nim')?.value;
   if (!nim) return;
 
-  const t1 = parseFloat(document.getElementById('input-grade-t1')?.value) || 0;
-  const t2 = parseFloat(document.getElementById('input-grade-t2')?.value) || 0;
-  const t3 = parseFloat(document.getElementById('input-grade-t3')?.value) || 0;
-  const part = parseFloat(document.getElementById('input-grade-part')?.value) || 0;
-  const notes = document.getElementById('input-grade-notes')?.value || '';
+  const rawT1 = document.getElementById('input-grade-t1')?.value.trim();
+  const rawT2 = document.getElementById('input-grade-t2')?.value.trim();
+  const rawT3 = document.getElementById('input-grade-t3')?.value.trim();
+  const rawPart = document.getElementById('input-grade-part')?.value.trim();
+  const notes = document.getElementById('input-grade-notes')?.value.trim() || '';
 
   if (!state.grades) state.grades = {};
   state.grades[nim] = {
-    tugas1: t1,
-    tugas2: t2,
-    tugas3: t3,
-    partisipasi: part,
+    tugas1: rawT1 !== '' ? parseFloat(rawT1) : '',
+    tugas2: rawT2 !== '' ? parseFloat(rawT2) : '',
+    tugas3: rawT3 !== '' ? parseFloat(rawT3) : '',
+    partisipasi: rawPart !== '' ? parseFloat(rawPart) : '',
     catatan: notes
   };
 
@@ -368,6 +355,19 @@ window.handleSaveGrade = function(e) {
   closeGradeModal();
   renderApp();
   showToast('Nilai mahasiswa berhasil disimpan & diperbarui!', 'success');
+};
+
+window.resetClassGrades = function(classId) {
+  if (confirm(`Apakah Anda yakin ingin mengosongkan seluruh data nilai mahasiswa Kelas ${classId}?`)) {
+    const studentsInClass = STUDENTS_DATA.filter(s => s.kelas === classId);
+    if (!state.grades) state.grades = {};
+    studentsInClass.forEach(s => {
+      delete state.grades[s.nim];
+    });
+    localStorage.setItem('ut_grades', JSON.stringify(state.grades));
+    renderApp();
+    showToast(`Data nilai Kelas ${classId} telah berhasil dikosongkan.`, 'info');
+  }
 };
 
 window.exportGradebookCSV = function(classId) {
@@ -381,25 +381,39 @@ window.exportGradebookCSV = function(classId) {
   csv += `No,NIM,Nama Mahasiswa,Tugas 1,Tugas 2,Tugas 3,Rata-rata Tugas (70%),Partisipasi (30%),Nilai Akhir,Predikat,Catatan Masukan Tutor\n`;
 
   students.forEach((s, idx) => {
-    const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85, catatan: '' };
-    const avgTugas = ((g.tugas1 + g.tugas2 + g.tugas3) / 3).toFixed(1);
-    const finalScore = ((0.7 * parseFloat(avgTugas)) + (0.3 * g.partisipasi)).toFixed(1);
-    let gradeLetter = 'B';
-    if (finalScore >= 85) gradeLetter = 'A';
-    else if (finalScore >= 75) gradeLetter = 'B';
-    else if (finalScore >= 65) gradeLetter = 'C';
-    else gradeLetter = 'D';
+    const g = (state.grades && state.grades[s.nim]) || null;
+    const t1 = (g && g.tugas1 !== undefined) ? g.tugas1 : '';
+    const t2 = (g && g.tugas2 !== undefined) ? g.tugas2 : '';
+    const t3 = (g && g.tugas3 !== undefined) ? g.tugas3 : '';
+    const part = (g && g.partisipasi !== undefined) ? g.partisipasi : '';
+
+    let avgTugas = '';
+    let finalScore = '';
+    let gradeLetter = '';
+
+    if (t1 !== '' || t2 !== '' || t3 !== '' || part !== '') {
+      const numT1 = parseFloat(t1) || 0;
+      const numT2 = parseFloat(t2) || 0;
+      const numT3 = parseFloat(t3) || 0;
+      const numPart = parseFloat(part) || 0;
+      avgTugas = ((numT1 + numT2 + numT3) / 3).toFixed(1);
+      finalScore = ((0.7 * parseFloat(avgTugas)) + (0.3 * numPart)).toFixed(1);
+      if (parseFloat(finalScore) >= 85) gradeLetter = 'A';
+      else if (parseFloat(finalScore) >= 75) gradeLetter = 'B';
+      else if (parseFloat(finalScore) >= 65) gradeLetter = 'C';
+      else gradeLetter = 'D';
+    }
 
     const safeName = `"${s.nama.replace(/"/g, '""')}"`;
-    const safeNote = `"${(g.catatan || '').replace(/"/g, '""')}"`;
-    csv += `${idx + 1},${s.nim},${safeName},${g.tugas1},${g.tugas2},${g.tugas3},${avgTugas},${g.partisipasi},${finalScore},${gradeLetter},${safeNote}\n`;
+    const safeNote = `"${((g && g.catatan) || '').replace(/"/g, '""')}"`;
+    csv += `${idx + 1},${s.nim},${safeName},${t1},${t2},${t3},${avgTugas},${part},${finalScore},${gradeLetter},${safeNote}\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `Rekap_Nilai_UT_Kelas_${classId}.csv`);
+  link.setAttribute('download', `Rekap_Nilai_UT_2026.2_Kelas_${classId}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -989,7 +1003,7 @@ function renderHomeView() {
                 </span>
                 <input id="login-username" type="text" required
                        placeholder="${state.loginRole === 'tutor' ? 'bagoespancawiratama@gmail.com' : 'Contoh: 860080512@ecampus.ut.ac.id atau 860080512'}" 
-                       value="${state.loginRole === 'tutor' ? 'bagoespancawiratama@gmail.com' : ''}"
+                       value=""
                        class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
               </div>
             </div>
@@ -1004,7 +1018,7 @@ function renderHomeView() {
                 </span>
                 <input id="login-password" type="password" required
                        placeholder="${state.loginRole === 'tutor' ? 'Masukkan Password Tutor (18004313*)' : 'Masukkan NIM Anda'}" 
-                       value="${state.loginRole === 'tutor' ? '18004313*' : ''}"
+                       value=""
                        class="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004990] focus:border-transparent text-xs sm:text-sm font-medium transition" />
                 <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
                   <span id="pw-icon" class="material-symbols-outlined text-[20px]">visibility</span>
@@ -2282,17 +2296,26 @@ function renderTutorManagementView() {
   const tutorials = TUTORIALS_DATA[selectedClass] || TUTORIALS_DATA['5A'];
   const currentTut = tutorials.find(t => t.sesi === sesiFilter) || tutorials[0];
 
-  // Calculate Class Average
+  // Calculate Class Average (only from students with entered grades)
   let totalScore = 0;
   let gradedCount = 0;
   studentsInClass.forEach(s => {
-    const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85 };
-    const avgTugas = (g.tugas1 + g.tugas2 + g.tugas3) / 3;
-    const finalScore = (0.7 * avgTugas) + (0.3 * g.partisipasi);
-    totalScore += finalScore;
-    gradedCount++;
+    const g = state.grades && state.grades[s.nim];
+    if (g && (g.tugas1 !== '' || g.tugas2 !== '' || g.tugas3 !== '' || g.partisipasi !== '')) {
+      const t1 = parseFloat(g.tugas1) || 0;
+      const t2 = parseFloat(g.tugas2) || 0;
+      const t3 = parseFloat(g.tugas3) || 0;
+      const part = parseFloat(g.partisipasi) || 0;
+      const avgTugas = (t1 + t2 + t3) / 3;
+      const finalScore = (0.7 * avgTugas) + (0.3 * part);
+      totalScore += finalScore;
+      gradedCount++;
+    }
   });
-  const classAverage = gradedCount > 0 ? (totalScore / gradedCount).toFixed(1) : '85.0';
+  const classAverage = gradedCount > 0 ? (totalScore / gradedCount).toFixed(1) : '-';
+  const averageStatus = gradedCount > 0 
+    ? (parseFloat(classAverage) >= 85 ? 'Sangat Baik' : (parseFloat(classAverage) >= 75 ? 'Baik' : 'Cukup'))
+    : 'Belum Ada Nilai';
 
   return `
     <div class="flex flex-col space-y-6 pb-20">
@@ -2369,7 +2392,7 @@ function renderTutorManagementView() {
         </div>
         <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
           <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rata-rata Nilai Kelas</span>
-          <span class="text-xl sm:text-2xl font-extrabold text-emerald-600">${classAverage} <span class="text-xs font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Sangat Baik</span></span>
+          <span class="text-xl sm:text-2xl font-extrabold ${gradedCount > 0 ? 'text-emerald-600' : 'text-slate-400'}">${classAverage} <span class="text-xs font-bold ${gradedCount > 0 ? 'text-emerald-800 bg-emerald-100' : 'text-slate-500 bg-slate-100'} px-2 py-0.5 rounded-full">${averageStatus}</span></span>
         </div>
         <div class="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
           <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Rangkaian Sesi</span>
@@ -2444,6 +2467,11 @@ function renderTutorGradebookTab(classId, course, students) {
             <span class="material-symbols-outlined text-[17px]">print</span>
             <span>Cetak</span>
           </button>
+
+          <button onclick="resetClassGrades('${classId}')" title="Kosongkan seluruh nilai mahasiswa di kelas ini" class="h-9 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs flex items-center gap-1 transition">
+            <span class="material-symbols-outlined text-[17px]">delete_sweep</span>
+            <span>Kosongkan Nilai</span>
+          </button>
         </div>
       </div>
 
@@ -2465,15 +2493,34 @@ function renderTutorGradebookTab(classId, course, students) {
           </thead>
           <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
             ${students.map((s, idx) => {
-              const g = (state.grades && state.grades[s.nim]) || { tugas1: 85, tugas2: 85, tugas3: 85, partisipasi: 85, catatan: '' };
-              const avgTugas = ((g.tugas1 + g.tugas2 + g.tugas3) / 3).toFixed(1);
-              const finalScore = ((0.7 * parseFloat(avgTugas)) + (0.3 * g.partisipasi)).toFixed(1);
-              let gradeBadge = 'bg-blue-100 text-blue-800';
-              let gradeLetter = 'B';
-              if (finalScore >= 85) { gradeBadge = 'bg-emerald-100 text-emerald-800'; gradeLetter = 'A'; }
-              else if (finalScore >= 75) { gradeBadge = 'bg-blue-100 text-blue-800'; gradeLetter = 'B'; }
-              else if (finalScore >= 65) { gradeBadge = 'bg-amber-100 text-amber-800'; gradeLetter = 'C'; }
-              else { gradeBadge = 'bg-rose-100 text-rose-800'; gradeLetter = 'D'; }
+              const g = (state.grades && state.grades[s.nim]) || null;
+              const hasT1 = g && g.tugas1 !== '' && g.tugas1 !== undefined;
+              const hasT2 = g && g.tugas2 !== '' && g.tugas2 !== undefined;
+              const hasT3 = g && g.tugas3 !== '' && g.tugas3 !== undefined;
+              const hasPart = g && g.partisipasi !== '' && g.partisipasi !== undefined;
+
+              const t1 = hasT1 ? g.tugas1 : '-';
+              const t2 = hasT2 ? g.tugas2 : '-';
+              const t3 = hasT3 ? g.tugas3 : '-';
+              const part = hasPart ? g.partisipasi : '-';
+
+              let finalScore = '-';
+              let gradeBadge = 'bg-slate-100 text-slate-400';
+              let gradeLetter = '-';
+
+              if (hasT1 || hasT2 || hasT3 || hasPart) {
+                const numT1 = parseFloat(t1) || 0;
+                const numT2 = parseFloat(t2) || 0;
+                const numT3 = parseFloat(t3) || 0;
+                const numPart = parseFloat(part) || 0;
+                const avgTugas = (numT1 + numT2 + numT3) / 3;
+                const scoreNum = (0.7 * avgTugas) + (0.3 * numPart);
+                finalScore = scoreNum.toFixed(1);
+                if (scoreNum >= 85) { gradeBadge = 'bg-emerald-100 text-emerald-800'; gradeLetter = 'A'; }
+                else if (scoreNum >= 75) { gradeBadge = 'bg-blue-100 text-blue-800'; gradeLetter = 'B'; }
+                else if (scoreNum >= 65) { gradeBadge = 'bg-amber-100 text-amber-800'; gradeLetter = 'C'; }
+                else { gradeBadge = 'bg-rose-100 text-rose-800'; gradeLetter = 'D'; }
+              }
 
               return `
                 <tr class="hover:bg-blue-50/40 transition">
@@ -2482,16 +2529,16 @@ function renderTutorGradebookTab(classId, course, students) {
                     <span class="font-extrabold text-slate-900 block">${s.nama}</span>
                     <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
                   </td>
-                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas1}</td>
-                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas2}</td>
-                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.tugas3}</td>
-                  <td class="py-3 px-3 text-center font-bold text-slate-700">${g.partisipasi}</td>
-                  <td class="py-3 px-3 text-center font-extrabold text-slate-900 text-sm">${finalScore}</td>
+                  <td class="py-3 px-3 text-center font-bold ${hasT1 ? 'text-slate-800' : 'text-slate-400'}">${t1}</td>
+                  <td class="py-3 px-3 text-center font-bold ${hasT2 ? 'text-slate-800' : 'text-slate-400'}">${t2}</td>
+                  <td class="py-3 px-3 text-center font-bold ${hasT3 ? 'text-slate-800' : 'text-slate-400'}">${t3}</td>
+                  <td class="py-3 px-3 text-center font-bold ${hasPart ? 'text-slate-800' : 'text-slate-400'}">${part}</td>
+                  <td class="py-3 px-3 text-center font-extrabold ${finalScore !== '-' ? 'text-slate-900 text-sm' : 'text-slate-400'}">${finalScore}</td>
                   <td class="py-3 px-3 text-center">
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${gradeBadge}">${gradeLetter}</span>
                   </td>
-                  <td class="py-3 px-3 text-slate-500 text-[11px] max-w-[180px] truncate" title="${g.catatan || ''}">
-                    ${g.catatan || '<span class="text-slate-300 italic">Belum ada catatan</span>'}
+                  <td class="py-3 px-3 text-slate-500 text-[11px] max-w-[180px] truncate" title="${(g && g.catatan) || ''}">
+                    ${(g && g.catatan) ? g.catatan : '<span class="text-slate-300 italic">Belum ada catatan</span>'}
                   </td>
                   <td class="py-3 px-3 text-right">
                     <button onclick="openGradeModal('${s.nim}')" class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] shadow-2xs transition flex items-center gap-1 ml-auto">
@@ -2562,8 +2609,13 @@ function renderTutorLkpdTab(classId, course, students, sesiFilter, currentTut) {
             </thead>
             <tbody class="divide-y divide-slate-100 font-medium text-slate-800">
               ${students.map((s, idx) => {
-                const g = (state.grades && state.grades[s.nim]) || { partisipasi: 85, catatan: '' };
-                const score = g.partisipasi || 85;
+                const subKey = `${s.nim}_${selectedClass}_s${sesiFilter}`;
+                const submission = state.submissions && state.submissions[subKey];
+                const g = state.grades && state.grades[s.nim];
+                const hasScore = g && g.partisipasi !== '' && g.partisipasi !== undefined;
+                const score = hasScore ? g.partisipasi : '-';
+                const hasSubmission = !!submission;
+
                 return `
                   <tr class="hover:bg-slate-50/70 transition">
                     <td class="py-2.5 px-3 text-slate-400 font-mono">${idx + 1}</td>
@@ -2572,17 +2624,25 @@ function renderTutorLkpdTab(classId, course, students, sesiFilter, currentTut) {
                       <span class="font-mono text-[11px] text-slate-400">${s.nim}</span>
                     </td>
                     <td class="py-2.5 px-3">
-                      <span class="inline-flex items-center gap-1 font-mono text-[11px] text-[#004990] font-semibold">
-                        <span class="material-symbols-outlined text-[15px]">description</span>
-                        LKPD_${selectedClass}_S${sesiFilter}_${s.nim}.pdf
-                      </span>
+                      ${hasSubmission ? `
+                        <span class="inline-flex items-center gap-1 font-mono text-[11px] text-[#004990] font-semibold">
+                          <span class="material-symbols-outlined text-[15px]">description</span>
+                          ${submission.filename || `LKPD_${selectedClass}_S${sesiFilter}_${s.nim}.pdf`}
+                        </span>
+                      ` : `
+                        <span class="text-slate-400 italic text-[11px]">Belum ada berkas</span>
+                      `}
                     </td>
                     <td class="py-2.5 px-3 text-center">
-                      <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Sudah Mengumpulkan</span>
+                      ${hasSubmission ? `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">Sudah Unggah</span>
+                      ` : `
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">Belum Mengumpulkan</span>
+                      `}
                     </td>
-                    <td class="py-2.5 px-3 text-center font-extrabold text-slate-900 text-sm">${score}</td>
-                    <td class="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${g.catatan || ''}">
-                      ${g.catatan || '<span class="text-slate-300 italic">Belum ada umpan balik</span>'}
+                    <td class="py-2.5 px-3 text-center font-extrabold ${hasScore ? 'text-slate-900 text-sm' : 'text-slate-400'}">${score}</td>
+                    <td class="py-2.5 px-3 text-slate-500 text-[11px] max-w-[200px] truncate" title="${(g && g.catatan) || ''}">
+                      ${(g && g.catatan) ? g.catatan : '<span class="text-slate-300 italic">Belum ada umpan balik</span>'}
                     </td>
                     <td class="py-2.5 px-3 text-right">
                       <button onclick="openGradeModal('${s.nim}')" class="px-3 py-1.5 rounded-lg bg-[#003367] hover:bg-[#004990] text-white font-extrabold text-[11px] transition">
